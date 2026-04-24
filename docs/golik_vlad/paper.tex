@@ -1,0 +1,67 @@
+\documentclass[14pt, a4paper]{extarticle}
+\usepackage{mospolytech_coursework}
+
+% Определение данных
+\newcommand{\theme}{%
+    Разработка веб-приложения для аниме-платформы с системой рекомендаций и личными кабинетами пользователей%
+}
+\newcommand{\subject}{Разработка веб-приложений}
+\newcommand{\student}{Голик Владислав Сергеевич}
+\newcommand{\group}{241-3211}
+\newcommand{\teacher}{Кружалов Алексей Сергеевич}
+
+% Настройка гиперссылок для навигации по документу
+\usepackage[unicode=true, pdftex]{hyperref}
+\hypersetup{
+    colorlinks=true,      % Цветные ссылки
+    linkcolor=black,      % Цвет ссылок на разделы 
+    citecolor=black,      % Цвет ссылок на литературу
+    urlcolor=blue,        % Цвет URL-ссылок
+    pdftitle={\theme},    % Заголовок PDF
+    pdfauthor={\student}, % Автор PDF
+    pdfsubject={\subject},% Тема PDF
+    pdfstartview=FitH,    % Масштаб при открытии
+    pdfpagelabels=true,   % Метки страниц
+    pdfpagemode=UseOutlines % Показывать закладки
+}
+
+\begin{document}
+
+% Титульный лист
+\include{title}
+
+% Задание
+\includepdf[pages=-]{task.pdf}
+%\include{task}
+
+% Содержание
+\tableofcontents
+\clearpage
+
+% Введение
+\phantomsection
+\include{intro}
+
+% Основная часть
+\phantomsection
+\include{chapter1}
+
+%\phantomsection
+%\include{chapter2}
+
+%\phantomsection
+%\include{chapter3}
+
+% Заключение
+%\phantomsection
+%\include{conclusion}
+
+% Список литературы
+%\renewcommand{\refname}{Список литературы}
+%\bibliographystyle{ugost2003} % ГОСТ 7.1-2003
+%\bibliography{refs}
+
+% Приложения (при необходимости)
+% \include{appendix}
+
+\end{document}

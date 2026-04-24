@@ -1,0 +1,187 @@
+\documentclass[14pt, a4paper]{extarticle}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{tempora}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{ltablex}
+\usepackage{ragged2e}
+\usepackage{graphicx}
+\usepackage{calc}
+\usepackage[left=30mm, right=15mm, top=20mm, bottom=20mm, footskip=12mm]{geometry}
+\usepackage[table]{xcolor}
+
+\definecolor{lightblue}{rgb}{0.85,0.9,1}
+\definecolor{lightgreen}{rgb}{0.85,1,0.85}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+
+\newcolumntype{P}[1]{>{\RaggedRight\arraybackslash}p{#1 - 2\tabcolsep - 2\arrayrulewidth}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1 - 2\tabcolsep - 2\arrayrulewidth}}
+
+
+\begin{document}
+
+\pagestyle{empty}
+
+% ------------------------- Заголовок документа -------------------------
+
+\begin{center}
+    {\small МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ РОССИЙСКОЙ ФЕДЕРАЦИИ}
+
+    \resizebox{\textwidth}{!}{\fontsize{8pt}{10pt}\selectfont ФЕДЕРАЛЬНОЕ
+        ГОСУДАРСТВЕННОЕ АВТОНОМНОЕ ОБРАЗОВАТЕЛЬНОЕ УЧРЕЖДЕНИЕ ВЫСШЕГО ОБРАЗОВАНИЯ}
+
+    {\small \textbf{«МОСКОВСКИЙ ПОЛИТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ»}} \\
+    {\small \textbf{(МОСКОВСКИЙ ПОЛИТЕХ)}}
+\end{center}
+
+\begin{tabularx}{\textwidth}{@{} p{0.53\textwidth} p{0.43\textwidth} @{}}
+     &
+    \raggedright
+    УТВЕРЖДАЮ                          \\
+    заведующая кафедрой                \\
+    «Инфокогнитивные технологии»       \\[0.3cm]
+
+    \rule{3cm}{0.4pt} / Е.~А.~Пухова / \\[0.1cm]
+
+    «\rule{0.8cm}{0.4pt}» \rule{3cm}{0.4pt} 2026~г.
+\end{tabularx}
+
+% -------------------------- Общая информация --------------------------
+
+\begin{center}
+
+    { \large \textbf{ЗАДАНИЕ}}
+
+    \textbf{на выполнение курсовой работы (проекта)}
+
+    Голику Владиславу Сергеевичу,
+
+\end{center}
+
+обучающемуся группы 241-3211,
+
+направления подготовки 09.03.01 «Информатика и вычислительная техника»
+
+по дисциплине «Разработка веб-приложений»
+
+на тему «Разработка веб-приложения для аниме-платформы с системой рекомендаций и личными кабинетами пользователей»
+
+1. Исходные данные к работе (проекту): информационные ресурсы в сети
+интернет, научные публикации в открытой печати.
+
+2. Содержание задания по курсовой работе (проекту) -- перечень вопросов,
+подлежащих разработке:
+
+% ------------------------------- Задачи -------------------------------
+
+{
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{longtable}{|P{0.5\textwidth}|C{0.11\textwidth}|C{0.15\textwidth}|C{0.24\textwidth}|}
+
+    \hline
+    \textbf{Разрабатываемый вопрос} & \textbf{Объем, \%} & \textbf{Срок} & \textbf{Примечание} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+
+    \multicolumn{4}{|P{\textwidth}|}{\textbf{Раздел 1. Анализ предметной области}} \\ \hline
+    Задача 1.1. Формулировка цели работы & 2 & 18.04.2026 & \cellcolor{lightgreen} Голик Д. С. \\ \hline
+    Задача 1.2. Обзор существующих аниме-платформ (аналоги, функциональность) & 3 & 08.04.2026 & \cellcolor{lightblue} Голик В. С.\\ \hline
+    Задача 1.3. Обзор существующих систем рекомендаций (content-based + коллаборативная) & 3 & 08.04.2026 & \cellcolor{lightgreen} Голик Д. С.\\ \hline
+    Задача 1.4. Анализ инструментов для сервиса аутентификации и пользовательских данных (выбор Go) & 2 & 11.04.2026 & \cellcolor{lightblue} Голик В. С. \\ \hline
+    Задача 1.5. Анализ инструментов для контент-сервиса и сервиса рекомендаций (выбор Python) & 2 & 11.04.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 1.6. Анализ инструментов для Frontend Service (FastAPI: генерация и передача страниц) & 2 & 11.04.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 1.7. Анализ целевой аудитории: количественные методы, сбор данных о пользователях аниме-платформ (возраст, пол, география), построение графиков и диаграмм & 2 & 15.04.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 1.8. Анализ целевой аудитории: сравнение групп аудитории (жанровые предпочтения) & 1 & 15.04.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 1.9. Формулировка задач работы (разбивка по четырём сервисам и Nginx) & 3 & 18.04.2026 & \cellcolor{lightgreen} \\ \hline
+
+    \multicolumn{4}{|P{\textwidth}|}{\textbf{Раздел 2. Проектирование веб-приложения}} \\ \hline
+    Задача 2.1. User story для пользователя (разработка сценариев использования) & 2 & 30.04.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 2.2. Диаграмма вариантов использования (UML) & 2 & 30.04.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 2.3. Проектирование ER-диаграммы для БД (таблицы Content Service: аниме, новости) & 2 & 07.05.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 2.4. Проектирование ER-диаграммы для БД (таблицы Auth \& Users Service: пользователи, комментарии, избранное) & 2 & 07.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 2.5. Проектирование ER-диаграммы для БД (таблицы Recommendations Engine) & 1 & 07.05.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 2.6. Проектирование взаимодействия между сервисами (схема API-вызовов, Nginx как reverse-proxy) & 2 & 10.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 2.7. Макеты страниц: главная, новости, каталог аниме, страница аниме & 2 & 12.05.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 2.8. Макеты страниц: личный кабинет, избранное, логин/регистрация & 2 & 12.05.2026 & \cellcolor{lightblue} \\ \hline
+
+    \multicolumn{4}{|P{\textwidth}|}{\textbf{Раздел 3. Разработка веб-приложения}} \\ \hline
+    Задача 3.1. Настройка Nginx: reverse-proxy & 2 & 15.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.2. Frontend Service (FastAPI): настройка проекта, маршруты для генерации HTML-страниц & 2 & 18.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.3. Frontend Service: интеграция шаблонов (header, footer, карточки) с передачей данных от Content Service & 2 & 20.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.4. Content Service: настройка проекта, подключение к БД, модели и миграции для аниме и новостей & 3 & 22.05.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.5. Content Service: CRUD API для аниме и новостей (GET, POST, PUT, DELETE) & 3 & 25.05.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.6. Auth \& Users Service: настройка проекта, роутинг, подключение к БД, модели пользователей, комментариев, избранного & 4 & 22.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.7. Auth \& Users Service: реализация аутентификации (регистрация, вход, JWT) & 3 & 26.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.8. Auth \& Users Service: CRUD API для пользователей и комментариев & 3 & 28.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.9. Auth \& Users Service: разработка системы избранного & 3 & 04.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.10. Auth \& Users Service: реализация логирования и сбора метрик & 2 & 06.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.11. Recommendations Engine: настройка проекта, подключение к БД, получение данных & 2 & 01.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.12. Recommendations Engine: реализация content-based и коллаборативной фильтрации & 5 & 08.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.13. Recommendations Engine: REST API для получения рекомендаций & 2 & 09.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.14. Интеграция: HTTP-клиент в Auth \& Users Service для вызова Recommendations Engine & 2 & 10.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.15. Интеграция: настройка CORS и маршрутов в Nginx для всех четырёх сервисов & 1 & 10.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.16. Вёрстка страниц: главная страница, новости, каталог, страница аниме & 3 & 20.05.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.17. Вёрстка страниц: вход/регистрация, профиль, избранное & 3 & 20.05.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.18. Контейнеризация: создание Dockerfile для Frontend Service (FastAPI) & 1 & 12.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.19. Контейнеризация: создание Dockerfile для Content Service & 1 & 12.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.20. Контейнеризация: создание Dockerfile для Auth \& Users Service & 1 & 12.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 3.21. Контейнеризация: создание Dockerfile для Recommendations Engine & 1 & 12.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 3.22. Контейнеризация: настройка Docker Compose для оркестрации всех сервисов и Nginx & 2 & 14.06.2026 & \cellcolor{lightblue} \\ \hline
+
+    \multicolumn{4}{|P{\textwidth}|}{\textbf{Раздел 4. Оформление итогов работы}} \\ \hline
+    Задача 4.1. Создание Git-репозитория, настройка .gitignore, веток & 2 & 10.04.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 4.2. Деплой проекта на хостинг & 3 & 12.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 4.3. Оформление отчёта: введение, анализ аналогов, выбор инструментов & 2 & 15.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 4.4. Оформление отчёта: проектирование БД, схемы взаимодействия, макеты & 2 & 15.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 4.5. Оформление отчёта: разработка Auth \& Users Service и Nginx & 2 & 15.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 4.6. Оформление отчёта: разработка Content Service и Recommendations Engine, фронтенд & 2 & 15.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 4.7. Оформление отчёта: разработка Frontend Service (FastAPI) & 1 & 15.06.2026 & \cellcolor{lightblue} \\ \hline
+    Задача 4.8. Оформление отчёта: контейнеризация и развёртывание (Docker, Docker Compose) & 1 & 15.06.2026 & \cellcolor{lightgreen} \\ \hline
+    Задача 4.9. Оформление отчёта: заключение, тестирование, список литературы & 2 & 15.06.2026 & \cellcolor{lightgreen} \\ \hline
+\end{longtable}
+}
+
+% -------------- Сведения о выдаче и принятии задания -------------------
+
+Руководитель курсовой работы (проекта): \\ старший преподаватель кафедры
+«Инфокогнитивные технологии»
+
+{
+\renewcommand{\arraystretch}{2}
+\noindent
+\begin{tabularx}{\textwidth}{@{} P{0.45\textwidth} P{0.3\textwidth} P{0.25\textwidth} @{}}
+
+    «\rule{0.8cm}{0.4pt}» \quad \rule{2cm}{0.4pt} \quad 2026~г. &
+    \centering \rule{3.5cm}{0.4pt} \par \footnotesize (подпись) &
+    \hfill А.~С.~Кружалов                                         \\
+\end{tabularx}
+
+\begin{tabularx}{\textwidth}{@{} P{0.45\textwidth} P{0.55\textwidth} @{}}
+    Дата выдачи задания           &
+    \hfill «1» \quad апреля \quad 2026~г. \\
+
+    Дата сдачи выполненной работы &
+    \hfill «\rule{0.8cm}{0.4pt}» \quad \rule{2cm}{0.4pt} \quad 2026~г. \\
+\end{tabularx}
+}
+
+Задание принял к исполнению
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{} P{0.45\textwidth } P{0.3\textwidth} P{0.25\textwidth} @{}}
+
+    «1» \quad апреля \quad 2026~г. &
+    \centering \rule{3.5cm}{0.4pt} \par \footnotesize (подпись) &
+    \hfill В. С. Голик                                         \\
+\end{tabularx}
+}
+
+\end{document}
