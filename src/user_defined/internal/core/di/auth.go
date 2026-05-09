@@ -29,7 +29,7 @@ type AuthApp struct {
 }
 
 func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
-	serverEndpoint := utils.GetEnv("SERVER_ENDPOINT", "")
+	serverEndpoint := utils.GetEnv("SERVER_ENDPOINT", ":16767")
 	postgresDSN := utils.GetEnv("USER_POSTGRES_DSN", "")
 	redisDSN := utils.GetEnv("USER_REDIS_ENDPOINT", "")
 	jwtSecret := utils.GetEnv("JWT_SECRET", "jwt-secret")
