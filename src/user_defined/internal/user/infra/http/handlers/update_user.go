@@ -12,7 +12,7 @@ import (
 func (a *AuthHandlers) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	claims, err := middleware.GetClaimsFromContext(r.Context())
 	if err != nil {
-		a.logger.Warn("user is unauthorized")
+		a.logger.Debug("user is unauthorized")
 		coreHttp.SendErrorJSON(a.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
@@ -32,6 +32,7 @@ func (a *AuthHandlers) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		IconUrl:     req.IconUrl,
 	})
 	if err != nil {
+		a.logger.Error("error updating user", "error", err.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(err, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)
@@ -44,4 +45,5 @@ func (a *AuthHandlers) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	coreHttp.SendJSON(a.logger, w, dto.UpdateUserResponse{
 		Message: "user profile updated",
 	}, http.StatusOK)
+	a.logger.Debug("user updated", "userID", claims.UserID.String())
 }

@@ -11,7 +11,7 @@ import (
 func (a *AuthHandlers) ChangePass(w http.ResponseWriter, r *http.Request) {
 	claims, err := middleware.GetClaimsFromContext(r.Context())
 	if err != nil {
-		a.logger.Warn("user is unauthorized")
+		a.logger.Debug("user is unauthorized")
 		coreHttp.SendErrorJSON(a.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
@@ -37,5 +37,5 @@ func (a *AuthHandlers) ChangePass(w http.ResponseWriter, r *http.Request) {
 	coreHttp.SendJSON(a.logger, w, dto.ChangePassResponse{
 		Message: "password changed successfully",
 	}, http.StatusOK)
-	a.logger.Debug("successfully changed password")
+	a.logger.Debug("successfully changed password", "userID", claims.UserID.String())
 }

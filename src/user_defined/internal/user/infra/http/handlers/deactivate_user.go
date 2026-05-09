@@ -11,13 +11,14 @@ import (
 func (a *AuthHandlers) DeactivateUser(w http.ResponseWriter, r *http.Request) {
 	claims, err := middleware.GetClaimsFromContext(r.Context())
 	if err != nil {
-		a.logger.Warn("user is unauthorized")
+		a.logger.Debug("user is unauthorized")
 		coreHttp.SendErrorJSON(a.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
 
 	errD := a.userService.Deactivate(r.Context(), claims.UserID)
 	if errD != nil {
+		a.logger.Debug("error deactivating user", "err", errD.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(errD, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)
@@ -30,4 +31,5 @@ func (a *AuthHandlers) DeactivateUser(w http.ResponseWriter, r *http.Request) {
 	coreHttp.SendJSON(a.logger, w, dto.DeactivateUserResponse{
 		Message: "user profile deactivated",
 	}, http.StatusNoContent)
+	a.logger.Debug("user deactivated", "user", claims.UserID.String())
 }

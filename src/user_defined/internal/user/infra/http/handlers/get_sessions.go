@@ -11,13 +11,14 @@ import (
 func (a *AuthHandlers) GetSessions(w http.ResponseWriter, r *http.Request) {
 	claims, err := middleware.GetClaimsFromContext(r.Context())
 	if err != nil {
-		a.logger.Warn("user is unauthorized")
+		a.logger.Debug("user is unauthorized")
 		coreHttp.SendErrorJSON(a.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
 
 	sessions, err := a.userService.GetSessions(r.Context(), claims.UserID)
 	if err != nil {
+		a.logger.Error("get sessions error", "err", err.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(err, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)
@@ -30,4 +31,5 @@ func (a *AuthHandlers) GetSessions(w http.ResponseWriter, r *http.Request) {
 	coreHttp.SendJSON(a.logger, w, dto.GetSessionsResponse{
 		Sessions: sessions,
 	}, http.StatusOK)
+	a.logger.Debug("get sessions success", "user", claims.UserID.String())
 }

@@ -54,4 +54,5 @@ func (a *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 	coreHttp.SendJSON(a.logger, w, dto.RefreshResponse{
 		Token: newAccessToken,
 	}, http.StatusOK)
+	a.logger.Debug("refresh success", "userID", claims.UserID.String())
 }

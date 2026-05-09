@@ -26,21 +26,25 @@ func (u *UserService) Refresh(ctx context.Context, claims security.Claims) (stri
 	// удаляем текущую сессию
 	err = u.tokeRepo.DeleteRefresh(ctx, claims.JwtID)
 	if err != nil {
+		u.logger.Warn("failed to delete refresh token", "error", err.Error())
 		return "", "", err
 	}
 	// сохраняем мету, чтобы переиспользовать
 	meta, err := u.tokeRepo.GetSessionMeta(ctx, claims.JwtID)
 	if err != nil {
+		u.logger.Warn("failed to get session meta", "error", err.Error())
 		return "", "", err
 	}
 	// удаляем мету
 	err = u.tokeRepo.DeleteSessionMeta(ctx, claims.JwtID)
 	if err != nil {
+		u.logger.Warn("failed to delete session meta", "error", err.Error())
 		return "", "", err
 	}
 	// удаляем из списка сессий
 	err = u.tokeRepo.RemoveUserSession(ctx, *userID, claims.JwtID)
 	if err != nil {
+		u.logger.Warn("failed to remove user session", "error", err.Error())
 		return "", "", err
 	}
 
@@ -50,29 +54,35 @@ func (u *UserService) Refresh(ctx context.Context, claims security.Claims) (stri
 
 	accessToken, err := u.jwt.GenerateAccessToken(newJwtId, *userID, claims.Email, claims.Role)
 	if err != nil {
+		u.logger.Warn("failed to generate access token", "error", err.Error())
 		return "", "", coreHttp.NewErrorWithDetails(coreHttp.ErrInternal, "error", err.Error())
 	}
-	//TODO: решить дилему с refresh и remember me
+
 	refreshToken, err := u.jwt.GenerateRefreshToken(newJwtId, *userID, claims.Email, claims.Role, false)
 	if err != nil {
+		u.logger.Warn("failed to generate refresh token", "error", err.Error())
 		return "", "", coreHttp.NewErrorWithDetails(coreHttp.ErrInternal, "error", err.Error())
 	}
 
 	err = u.tokeRepo.CreateRefresh(ctx, *userID, newJwtId, u.sessionTTL)
 	if err != nil {
+		u.logger.Warn("failed to create refresh token", "error", err.Error())
 		return "", "", err
 	}
 
 	err = u.tokeRepo.SaveSessionMeta(ctx, newJwtId, *meta, u.sessionTTL)
 	if err != nil {
+		u.logger.Warn("failed to save session meta", "error", err.Error())
 		return "", "", err
 	}
 
 	err = u.tokeRepo.AddUserSession(ctx, *userID, newJwtId)
 	if err != nil {
+		u.logger.Warn("failed to add user session", "error", err.Error())
 		return "", "", err
 	}
 
+	u.logger.Info("successfully refreshed user", "user", userID.String())
 	return accessToken, refreshToken, nil
 }
 

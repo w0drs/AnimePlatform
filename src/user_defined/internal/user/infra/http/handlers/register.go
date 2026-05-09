@@ -11,6 +11,7 @@ import (
 func (a *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	var req dto.RegisterRequest
 	if err := coreHttp.ParseJSONBody(a.logger, r, &req); err != nil {
+		a.logger.Warn("parse body failed", "err", err.Error())
 		coreHttp.SendErrorJSON(a.logger, w, err)
 		return
 	}
@@ -24,6 +25,7 @@ func (a *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		IconUrl:     req.IconURL,
 	})
 	if err != nil {
+		a.logger.Warn("register failed", "err", err.Error())
 		var errApi coreHttp.APIError
 		if errors.As(err, &errApi) {
 			coreHttp.SendErrorJSON(a.logger, w, &errApi)
@@ -42,4 +44,5 @@ func (a *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		IconUrl:     newUser.IconUrl,
 		Role:        newUser.Role,
 	}, http.StatusCreated)
+	a.logger.Debug("register success", "userID", newUser.ID.String())
 }

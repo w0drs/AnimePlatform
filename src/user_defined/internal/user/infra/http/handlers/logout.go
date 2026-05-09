@@ -18,6 +18,7 @@ func (a *AuthHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 
 	errL := a.userService.Logout(r.Context(), claims.JwtID)
 	if errL != nil {
+		a.logger.Error("logout error", "err", errL.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(errL, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)
@@ -30,4 +31,5 @@ func (a *AuthHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	coreHttp.SendJSON(a.logger, w, dto.LogoutResponse{
 		Message: "logged out",
 	}, http.StatusOK)
+	a.logger.Debug("logout success", "userID", claims.UserID.String())
 }
