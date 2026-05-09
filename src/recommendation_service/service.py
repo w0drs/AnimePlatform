@@ -35,7 +35,6 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Очистка при остановке
     print("Выключение сервиса...")
 
 
