@@ -9,9 +9,13 @@ import (
 	"kuronami/internal/core/postgres"
 	redis2 "kuronami/internal/core/redis"
 	"kuronami/internal/core/security"
+	favHandlers "kuronami/internal/favorite/infra/http/handlers"
+	favRouter "kuronami/internal/favorite/infra/http/router"
+	favPG "kuronami/internal/favorite/infra/postgres"
+	favService "kuronami/internal/favorite/service"
 	"kuronami/internal/user/infra/http/handlers"
 	"kuronami/internal/user/infra/http/router"
-	postgres2 "kuronami/internal/user/infra/postgres"
+	userPG "kuronami/internal/user/infra/postgres"
 	"kuronami/internal/user/infra/redis"
 	"kuronami/internal/user/service"
 	"log/slog"
@@ -29,7 +33,7 @@ type AuthApp struct {
 }
 
 func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
-	serverEndpoint := utils.GetEnv("SERVER_ENDPOINT", ":16767")
+	serverEndpoint := utils.GetEnv("SERVER_ENDPOINT", ":8002")
 	postgresDSN := utils.GetEnv("USER_POSTGRES_DSN", "")
 	redisDSN := utils.GetEnv("USER_REDIS_ENDPOINT", "")
 	jwtSecret := utils.GetEnv("JWT_SECRET", "jwt-secret")
@@ -80,19 +84,29 @@ func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
 	clsr.Add("redis", func(_ context.Context) error {
 		return redisPool.Close()
 	})
-	/// User-defined  //////////////////////////////////////////////////////////////////////////////////////////////////
-	userRepo := postgres2.NewUserRepo(logger, pool)
+	//// Auth //////////////////////////////////////////////////////////////////////////////////////////////////////////
+	userRepo := userPG.NewUserRepo(logger, pool)
 	tokenRepo := redis.NewTokenRepository(logger, redisPool)
 	jwt := security.NewJWTService(jwtSecret, accessTTLParsed, refreshTTLParsed, rememberTTLParsed)
 
 	userService := service.NewUserService(logger, userRepo, tokenRepo, jwt, sessionTTLParsed)
 	userHandlers := handlers.NewAuthHandlers(logger, userService, jwt)
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	muxUserDefined := router.GetAuthRouter(userHandlers, jwt)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/// Favorites //////////////////////////////////////////////////////////////////////////////////////////////////////
+	favRepo := favPG.NewFavoritePG(pool, logger)
+	favServ := favService.NewFavoriteService(logger, favRepo)
+	favHandles := favHandlers.NewFavoriteHandler(logger, favServ)
+	favRoutes := favRouter.FavoriteRouter(favHandles, jwt)
+
+	favRoutes.Handle("/", muxUserDefined)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	server := &http.Server{
 		Addr:    serverEndpoint,
-		Handler: muxUserDefined,
+		Handler: favRoutes,
 	}
 	return &AuthApp{
 		logger: logger,

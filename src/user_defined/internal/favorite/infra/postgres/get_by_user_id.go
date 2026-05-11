@@ -10,7 +10,9 @@ import (
 
 func (f *FavoritePG) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*domain.Favorite, error) {
 	query := `
-       SELECT user_id, anime_id from favorites where user_id = $1 and where is_deleted = false;
+       SELECT user_id, anime_id 
+       from favorites 
+       where user_id = $1 and is_deleted = false;
     `
 
 	rows, err := f.pool.Query(ctx, query, userID)
@@ -20,7 +22,7 @@ func (f *FavoritePG) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*doma
 	}
 	defer rows.Close()
 
-	var favorites = make([]*domain.Favorite, 0)
+	var favorites []*domain.Favorite
 
 	for rows.Next() {
 		var favorite domain.Favorite
@@ -31,6 +33,10 @@ func (f *FavoritePG) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*doma
 		favorites = append(favorites, &favorite)
 	}
 
-	f.logger.Debug("postgres get user favorites success", "userID", userID.String())
+	if err = rows.Err(); err != nil {
+		f.logger.Error("postgres rows iteration error", "err", err.Error())
+		return nil, coreHttp.ErrInternal
+	}
+
 	return favorites, nil
 }

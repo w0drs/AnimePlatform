@@ -15,12 +15,16 @@ func (f *FavoriteService) Delete(ctx context.Context, favorite domain.Favorite) 
 		return coreHttp.ErrInvalidUserParams
 	}
 
+	if favorite.AnimeID <= 0 {
+		f.logger.Warn("favorite add failed: invalid anime id", "animeID", favorite.AnimeID)
+		return coreHttp.ErrInvalidUserParams
+	}
+
 	ctxTimeout, cancel := context.WithTimeout(ctx, corePG.DefaultTimeout)
 	defer cancel()
 
 	err := f.favoritesRepo.Delete(ctxTimeout, favorite.UserID, favorite.AnimeID)
 	if err != nil {
-		f.logger.Error("delete favorite user error", "error", err.Error())
 		return err
 	}
 

@@ -15,12 +15,16 @@ func (f *FavoriteService) Add(ctx context.Context, favorite domain.Favorite) err
 		return coreHttp.ErrInvalidUserParams
 	}
 
+	if favorite.AnimeID <= 0 {
+		f.logger.Warn("favorite add failed: invalid anime id", "animeID", favorite.AnimeID)
+		return coreHttp.ErrInvalidUserParams
+	}
+
 	ctxTimeout, cancel := context.WithTimeout(ctx, corePG.DefaultTimeout)
 	defer cancel()
 
 	err := f.favoritesRepo.Add(ctxTimeout, favorite.UserID, favorite.AnimeID)
 	if err != nil {
-		f.logger.Error("add favorite user error", "error", err.Error())
 		return err
 	}
 

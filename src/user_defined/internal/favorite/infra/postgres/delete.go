@@ -11,7 +11,7 @@ func (f *FavoritePG) Delete(ctx context.Context, userID uuid.UUID, animeID int) 
 	query := `
       UPDATE favorites 
       SET is_deleted = true 
-      where user_id = $1 and anime_id = $2 and where is_deleted = false;
+      where user_id = $1 and anime_id = $2 and is_deleted = false;
     `
 
 	cmd, err := f.pool.Exec(ctx, query, userID, animeID)
@@ -20,10 +20,9 @@ func (f *FavoritePG) Delete(ctx context.Context, userID uuid.UUID, animeID int) 
 		return coreHttp.ErrInternal
 	}
 	if cmd.RowsAffected() == 0 {
-		f.logger.Debug("postgres delete favorites no affected", "user", userID.String())
+		f.logger.Warn("postgres delete favorites no affected", "user", userID.String())
 		return nil
 	}
 
-	f.logger.Debug("postgres delete favorites success", "user", userID.String())
 	return nil
 }

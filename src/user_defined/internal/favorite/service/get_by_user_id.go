@@ -20,7 +20,6 @@ func (f *FavoriteService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]
 
 	favorites, err := f.favoritesRepo.GetByUserID(ctxTimeout, userID)
 	if err != nil {
-		f.logger.Error("get user favorites failed", "error", err.Error())
 		return nil, err
 	}
 
