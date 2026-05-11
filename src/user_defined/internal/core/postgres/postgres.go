@@ -3,8 +3,12 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+const DefaultTimeout = time.Second * 20
 
 func Open(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	if dsn == "" {
