@@ -15,12 +15,12 @@ func GetAuthRouter(userHandlers *handlers.AuthHandlers, jwt *security.JWT) *http
 	mux.HandleFunc("POST /auth/register", userHandlers.Register)
 	mux.HandleFunc("POST /auth/refresh", userHandlers.Refresh)
 	mux.Handle("POST /auth/changepass", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.ChangePass)))
-	mux.HandleFunc("GET /auth/check", userHandlers.CheckAuth)
+	mux.HandleFunc("POST /auth/check", userHandlers.CheckAuth)
 
 	mux.HandleFunc("GET /user/profile/{login}", userHandlers.GetByLogin)
 	mux.Handle("GET /user/profile/me", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.GetMe)))
-	mux.Handle("PUT /user/profile", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.UpdateUser)))
-	mux.Handle("DELETE /user/profile", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.DeactivateUser)))
+	mux.Handle("PUT /user/profile/me", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.UpdateUser)))
+	mux.Handle("DELETE /user/profile/me", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.DeactivateUser)))
 
 	mux.Handle("GET /user/sessions", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.GetSessions)))
 	mux.Handle("DELETE /user/sessions", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.DeleteSessions)))

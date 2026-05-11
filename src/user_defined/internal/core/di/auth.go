@@ -80,18 +80,19 @@ func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
 	clsr.Add("redis", func(_ context.Context) error {
 		return redisPool.Close()
 	})
+	/// User-defined  //////////////////////////////////////////////////////////////////////////////////////////////////
 	userRepo := postgres2.NewUserRepo(logger, pool)
 	tokenRepo := redis.NewTokenRepository(logger, redisPool)
 	jwt := security.NewJWTService(jwtSecret, accessTTLParsed, refreshTTLParsed, rememberTTLParsed)
 
 	userService := service.NewUserService(logger, userRepo, tokenRepo, jwt, sessionTTLParsed)
 	userHandlers := handlers.NewAuthHandlers(logger, userService, jwt)
-
-	mux := router.GetAuthRouter(userHandlers, jwt)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	muxUserDefined := router.GetAuthRouter(userHandlers, jwt)
 
 	server := &http.Server{
 		Addr:    serverEndpoint,
-		Handler: mux,
+		Handler: muxUserDefined,
 	}
 	return &AuthApp{
 		logger: logger,

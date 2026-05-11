@@ -13,10 +13,12 @@ POST /auth/login  <without token>
 POST /auth/register  <without token>
 POST /auth/changepass   <token>
 POST /auth/refresh <token>
+POST /auth/check
 
-GET /user/{login}/profile  <without token>
-PUT /user/{login}/profile  <token>
-DELETE /user/{login}/profile  <token>
+GET /user/profile/{login}  <without token>
+GET /user/profile/me  <token>
+PUT /user/profile/me  <token>
+DELETE /user/profile/me  <token>
 
 GET /user/sessions <token>
 DELETE /user/sessions <token>
