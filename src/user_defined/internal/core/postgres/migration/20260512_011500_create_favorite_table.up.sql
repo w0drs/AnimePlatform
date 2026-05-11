@@ -6,3 +6,5 @@ CREATE TABLE favorites (
      is_deleted BOOLEAN DEFAULT FALSE,
      UNIQUE(user_id, anime_id)
 );
+
+CREATE INDEX idx_favorites_user_id ON favorites(user_id) WHERE is_deleted = false;
