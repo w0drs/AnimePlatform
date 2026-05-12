@@ -1,4 +1,4 @@
-CREATE TABLE favorites (
+CREATE TABLE IF NOT EXISTS favorites (
      id SERIAL PRIMARY KEY,
      user_id UUID NOT NULL,
      anime_id INTEGER NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE favorites (
      UNIQUE(user_id, anime_id)
 );
 
-CREATE INDEX idx_favorites_user_id ON favorites(user_id) WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id) WHERE is_deleted = false;
