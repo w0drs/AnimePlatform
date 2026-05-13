@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (f *FavoriteService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*domain.Favorite, error) {
+func (f *FavoriteService) GetListByUserID(ctx context.Context, userID uuid.UUID) ([]*domain.Favorite, error) {
 	if userID == uuid.Nil {
 		f.logger.Error("favorite get, user id is nil")
 		return nil, coreHttp.ErrInvalidUserParams
@@ -18,7 +18,7 @@ func (f *FavoriteService) GetByUserID(ctx context.Context, userID uuid.UUID) ([]
 	ctxTimeout, cancel := context.WithTimeout(ctx, corePG.DefaultTimeout)
 	defer cancel()
 
-	favorites, err := f.favoritesRepo.GetByUserID(ctxTimeout, userID)
+	favorites, err := f.favoritesRepo.GetListByUserID(ctxTimeout, userID)
 	if err != nil {
 		return nil, err
 	}

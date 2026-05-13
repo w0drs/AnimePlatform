@@ -75,6 +75,11 @@ var (
 		StatusCode: http.StatusNotFound,
 		ErrorCode:  "SESSION_META_NOT_FOUND",
 	}
+
+	ErrFavoriteNotFound = APIError{
+		StatusCode: http.StatusNotFound,
+		ErrorCode:  "FAVORITE_ANIME_NOT_FOUND",
+	}
 )
 
 func NewValidationError(field string, message string) APIError {

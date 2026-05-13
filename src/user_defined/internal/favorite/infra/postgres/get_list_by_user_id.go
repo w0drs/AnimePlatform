@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (f *FavoritePG) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*domain.Favorite, error) {
+func (f *FavoritePG) GetListByUserID(ctx context.Context, userID uuid.UUID) ([]*domain.Favorite, error) {
 	query := `
        SELECT user_id, anime_id 
        from favorites 
