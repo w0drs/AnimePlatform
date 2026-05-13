@@ -4,6 +4,12 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	Admin     = "admin"
+	Moderator = "moder"
+	Client    = "user"
+)
+
 type User struct {
 	ID          uuid.UUID
 	Login       string
