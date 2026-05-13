@@ -88,3 +88,11 @@ type DeleteSessionResponse struct {
 type LogoutResponse struct {
 	Message string `json:"message"`
 }
+
+type GetUserListRequest struct {
+	UserIDs []string `json:"users_id"`
+}
+
+type GetUserListResponse struct {
+	Users []domain.User `json:"users"`
+}

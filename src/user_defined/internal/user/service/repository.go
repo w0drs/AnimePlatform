@@ -18,6 +18,8 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 	// GetByLogin - получение пользователя по login
 	GetByLogin(ctx context.Context, login string) (*domain.User, error)
+	// GetByUserIDList - получает список пользователей по списку UUID (для агрегации на фронте надо)
+	GetByUserIDList(ctx context.Context, userIDList []uuid.UUID) ([]domain.User, error)
 
 	// ChangePassword - меняет пароль у пользователя
 	ChangePassword(ctx context.Context, userID uuid.UUID, new string) error

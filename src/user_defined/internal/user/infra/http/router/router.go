@@ -14,8 +14,11 @@ func GetAuthRouter(userHandlers *handlers.AuthHandlers, jwt *security.JWT) *http
 	mux.HandleFunc("POST /auth/login", userHandlers.Login)
 	mux.HandleFunc("POST /auth/register", userHandlers.Register)
 	mux.HandleFunc("POST /auth/refresh", userHandlers.Refresh)
-	mux.Handle("POST /auth/changepass", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.ChangePass)))
 	mux.HandleFunc("POST /auth/check", userHandlers.CheckAuth)
+	mux.Handle("POST /auth/changepass", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.ChangePass)))
+	mux.Handle("POST /auth/logout", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.Logout)))
+
+	mux.HandleFunc("POST /users/batch", userHandlers.GetUserList)
 
 	mux.HandleFunc("GET /user/profile/{login}", userHandlers.GetByLogin)
 	mux.Handle("GET /user/profile/me", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.GetMe)))
@@ -24,7 +27,6 @@ func GetAuthRouter(userHandlers *handlers.AuthHandlers, jwt *security.JWT) *http
 
 	mux.Handle("GET /user/sessions", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.GetSessions)))
 	mux.Handle("DELETE /user/sessions", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.DeleteSessions)))
-	mux.Handle("POST /user/logout", middleware.AuthMiddleware(jwt)(http.HandlerFunc(userHandlers.Logout)))
 
 	return mux
 }
