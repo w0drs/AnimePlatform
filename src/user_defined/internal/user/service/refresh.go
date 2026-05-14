@@ -26,25 +26,25 @@ func (u *UserService) Refresh(ctx context.Context, claims security.Claims) (stri
 	// удаляем текущую сессию
 	err = u.tokeRepo.DeleteRefresh(ctx, claims.JwtID)
 	if err != nil {
-		u.logger.Warn("failed to delete refresh token", "error", err.Error())
+		u.logger.Debug("failed to delete refresh token", "jti", claims.JwtID.String(), "error", err.Error())
 		return "", "", err
 	}
 	// сохраняем мету, чтобы переиспользовать
 	meta, err := u.tokeRepo.GetSessionMeta(ctx, claims.JwtID)
 	if err != nil {
-		u.logger.Warn("failed to get session meta", "error", err.Error())
+		u.logger.Debug("failed to get session meta", "jti", claims.JwtID.String(), "error", err.Error())
 		return "", "", err
 	}
 	// удаляем мету
 	err = u.tokeRepo.DeleteSessionMeta(ctx, claims.JwtID)
 	if err != nil {
-		u.logger.Warn("failed to delete session meta", "error", err.Error())
+		u.logger.Debug("failed to delete session meta", "jti", claims.JwtID.String(), "error", err.Error())
 		return "", "", err
 	}
 	// удаляем из списка сессий
 	err = u.tokeRepo.RemoveUserSession(ctx, *userID, claims.JwtID)
 	if err != nil {
-		u.logger.Warn("failed to remove user session", "error", err.Error())
+		u.logger.Debug("failed to remove user session", "jti", claims.JwtID.String(), "error", err.Error())
 		return "", "", err
 	}
 
@@ -54,31 +54,31 @@ func (u *UserService) Refresh(ctx context.Context, claims security.Claims) (stri
 
 	accessToken, err := u.jwt.GenerateAccessToken(newJwtId, *userID, claims.Email, claims.Role)
 	if err != nil {
-		u.logger.Warn("failed to generate access token", "error", err.Error())
+		u.logger.Warn("failed to generate access token", "jti", newJwtId.String(), "error", err.Error())
 		return "", "", coreHttp.NewErrorWithDetails(coreHttp.ErrInternal, "error", err.Error())
 	}
 
 	refreshToken, err := u.jwt.GenerateRefreshToken(newJwtId, *userID, claims.Email, claims.Role, false)
 	if err != nil {
-		u.logger.Warn("failed to generate refresh token", "error", err.Error())
+		u.logger.Warn("failed to generate refresh token", "jti", newJwtId.String(), "error", err.Error())
 		return "", "", coreHttp.NewErrorWithDetails(coreHttp.ErrInternal, "error", err.Error())
 	}
 
 	err = u.tokeRepo.CreateRefresh(ctx, *userID, newJwtId, u.sessionTTL)
 	if err != nil {
-		u.logger.Warn("failed to create refresh token", "error", err.Error())
+		u.logger.Debug("failed to create refresh token", "jti", newJwtId.String(), "error", err.Error())
 		return "", "", err
 	}
 
 	err = u.tokeRepo.SaveSessionMeta(ctx, newJwtId, *meta, u.sessionTTL)
 	if err != nil {
-		u.logger.Warn("failed to save session meta", "error", err.Error())
+		u.logger.Debug("failed to save session meta", "jti", newJwtId.String(), "error", err.Error())
 		return "", "", err
 	}
 
 	err = u.tokeRepo.AddUserSession(ctx, *userID, newJwtId)
 	if err != nil {
-		u.logger.Warn("failed to add user session", "error", err.Error())
+		u.logger.Debug("failed to add user session", "jti", newJwtId.String(), "error", err.Error())
 		return "", "", err
 	}
 
@@ -90,7 +90,7 @@ func (u *UserService) disconnection(ctx context.Context, claims security.Claims)
 	// получаем все сессии
 	sessions, err := u.tokeRepo.GetUserSessions(ctx, claims.UserID)
 	if err != nil {
-		u.logger.Error("Error getting user sessions", "error", err)
+		u.logger.Debug("failed getting user sessions", "userID", claims.UserID, "error", err.Error())
 		return err
 	}
 	u.logger.Debug("disconnected users sessions", "count", len(sessions))
@@ -98,7 +98,7 @@ func (u *UserService) disconnection(ctx context.Context, claims security.Claims)
 	// удаляем список сессий
 	err = u.tokeRepo.RemoveAllUserSessions(ctx, claims.UserID)
 	if err != nil {
-		u.logger.Error("error removing user sessions", "error", err)
+		u.logger.Debug("failed removing user sessions", "userID", claims.UserID.String(), "error", err.Error())
 		return err
 	}
 
@@ -107,13 +107,13 @@ func (u *UserService) disconnection(ctx context.Context, claims security.Claims)
 		// удаляем все refresh токены
 		err = u.tokeRepo.DeleteRefresh(ctx, jwtID)
 		if err != nil {
-			u.logger.Error("error deleting refresh", "error", err.Error())
+			u.logger.Debug("error deleting refresh", "jti", jwtID.String(), "error", err.Error())
 		}
 
 		// удаляем все мета о сессиях
 		err = u.tokeRepo.DeleteSessionMeta(ctx, jwtID)
 		if err != nil {
-			u.logger.Error("error deleting session meta", "error", err.Error())
+			u.logger.Debug("error deleting session meta", "jti", jwtID.String(), "error", err.Error())
 		}
 	}
 

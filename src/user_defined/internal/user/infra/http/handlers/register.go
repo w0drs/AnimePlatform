@@ -25,7 +25,7 @@ func (a *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		IconUrl:     req.IconURL,
 	})
 	if err != nil {
-		a.logger.Warn("register failed", "err", err.Error())
+		a.logger.Debug("register failed", "err", err.Error())
 		var errApi coreHttp.APIError
 		if errors.As(err, &errApi) {
 			coreHttp.SendErrorJSON(a.logger, w, &errApi)

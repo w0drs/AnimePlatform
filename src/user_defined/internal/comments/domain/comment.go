@@ -1,8 +1,14 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
-const DefaultCommentsPerPage = 15
+const (
+	DefaultCommentsPerPage = 15
+	MaxPageSize            = 200
+)
 
 type AnimeComment struct {
 	ID           int
@@ -10,6 +16,8 @@ type AnimeComment struct {
 	UserID       uuid.UUID
 	AnimeID      int
 	TaggedUserID *uuid.UUID
+
+	CreatedAt time.Time
 }
 
 type NewsComment struct {
@@ -18,4 +26,6 @@ type NewsComment struct {
 	UserID       uuid.UUID
 	NewsID       int
 	TaggedUserID *uuid.UUID
+
+	CreatedAt time.Time
 }

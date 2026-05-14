@@ -11,7 +11,7 @@ import (
 
 func (f *FavoriteService) Delete(ctx context.Context, favorite domain.Favorite) error {
 	if favorite.UserID == uuid.Nil {
-		f.logger.Error("favorite delete, user id is nil")
+		f.logger.Warn("favorite delete, user id is nil")
 		return coreHttp.ErrInvalidUserParams
 	}
 
@@ -25,6 +25,8 @@ func (f *FavoriteService) Delete(ctx context.Context, favorite domain.Favorite) 
 
 	err := f.favoritesRepo.Delete(ctxTimeout, favorite.UserID, favorite.AnimeID)
 	if err != nil {
+		f.logger.Debug("delete favorite failed",
+			"userID", favorite.UserID, "animeID", favorite.AnimeID, "error", err.Error())
 		return err
 	}
 

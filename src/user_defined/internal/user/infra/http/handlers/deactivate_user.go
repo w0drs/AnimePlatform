@@ -18,7 +18,7 @@ func (a *AuthHandlers) DeactivateUser(w http.ResponseWriter, r *http.Request) {
 
 	errD := a.userService.Deactivate(r.Context(), claims.UserID)
 	if errD != nil {
-		a.logger.Debug("error deactivating user", "err", errD.Error())
+		a.logger.Debug("error deactivating user", "userID", claims.UserID.String(), "err", errD.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(errD, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)
@@ -31,5 +31,5 @@ func (a *AuthHandlers) DeactivateUser(w http.ResponseWriter, r *http.Request) {
 	coreHttp.SendJSON(a.logger, w, dto.DeactivateUserResponse{
 		Message: "user profile deactivated",
 	}, http.StatusNoContent)
-	a.logger.Debug("user deactivated", "user", claims.UserID.String())
+	a.logger.Debug("user deactivated", "userID", claims.UserID.String())
 }

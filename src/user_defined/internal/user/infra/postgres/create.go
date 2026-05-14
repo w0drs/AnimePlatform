@@ -14,7 +14,7 @@ func (r *UserRepo) Create(ctx context.Context, user *domain.User) (*domain.User,
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id
 	`
-	r.logger.Info("userRepo.Create", "user", user)
+	r.logger.Debug("userRepo.Create", "user", user.ID.String())
 	err := r.pool.QueryRow(ctx, query, user.Login, user.Email, user.Password, user.FirstName, user.Description,
 		user.IconUrl, user.Role).Scan(&user.ID)
 	if err != nil {
@@ -33,6 +33,6 @@ func (r *UserRepo) Create(ctx context.Context, user *domain.User) (*domain.User,
 		return nil, coreHttp.ErrInternal
 	}
 
-	r.logger.Debug("user created", "id", user.ID)
+	r.logger.Debug("user created", "id", user.ID.String())
 	return user, nil
 }

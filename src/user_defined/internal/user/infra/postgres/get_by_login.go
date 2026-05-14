@@ -20,7 +20,7 @@ func (r *UserRepo) GetByLogin(ctx context.Context, login string) (*domain.User, 
 		&user.FirstName, &user.IconUrl, &user.Role,
 	)
 	if err != nil {
-		r.logger.Error("error getting user by login", "error", err.Error())
+		r.logger.Error("error getting user by login", "login", login, "error", err.Error())
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, coreHttp.ErrUserNotFound
 		}

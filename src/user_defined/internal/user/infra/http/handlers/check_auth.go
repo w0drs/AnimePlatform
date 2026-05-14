@@ -18,7 +18,7 @@ func (a *AuthHandlers) CheckAuth(w http.ResponseWriter, r *http.Request) {
 
 	claims, err := a.userService.GetClaims(req.Token)
 	if err != nil {
-		a.logger.Error("get claims error", "err", err.Error())
+		a.logger.Debug("get claims failed", "error", err.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(err, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)

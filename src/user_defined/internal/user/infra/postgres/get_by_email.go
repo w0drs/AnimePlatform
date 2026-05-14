@@ -20,7 +20,7 @@ func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*domain.User, 
 		&user.FirstName, &user.IconUrl, &user.Role,
 	)
 	if err != nil {
-		r.logger.Error("error getting user by email", "error", err.Error())
+		r.logger.Error("error getting user by email", "email", email, "error", err.Error())
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, coreHttp.ErrUserNotFound
 		}

@@ -18,7 +18,7 @@ func (a *AuthHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 
 	errL := a.userService.Logout(r.Context(), claims.JwtID)
 	if errL != nil {
-		a.logger.Error("logout error", "err", errL.Error())
+		a.logger.Debug("logout error", "jti", claims.JwtID.String(), "error", errL.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(errL, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)

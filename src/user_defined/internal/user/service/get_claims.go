@@ -8,15 +8,15 @@ import (
 func (u *UserService) GetClaims(accessToken string) (*security.Claims, error) {
 	if accessToken == "" {
 		u.logger.Warn("access token is empty")
-		return nil, coreHttp.ErrInvalidCredentials
+		return nil, coreHttp.ErrTokenIsInvalid
 	}
 
 	claims, err := u.jwt.ParseToken(accessToken)
 	if err != nil {
-		u.logger.Warn("access token is invalid")
-		return nil, coreHttp.ErrInvalidCredentials
+		u.logger.Warn("access token is invalid", "error", err.Error())
+		return nil, coreHttp.ErrTokenIsInvalid
 	}
 
-	u.logger.Info("access token is valid", "userID", claims.UserID.String())
+	u.logger.Debug("access token is valid", "userID", claims.UserID.String())
 	return claims, nil
 }

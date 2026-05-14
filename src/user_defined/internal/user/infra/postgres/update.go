@@ -29,10 +29,10 @@ func (r *UserRepo) Update(ctx context.Context, user *domain.User) (*domain.User,
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		r.logger.Error("user not found", "id", user.ID)
+		r.logger.Error("user not found", "id", user.ID.String())
 		return nil, coreHttp.ErrUserNotFound
 	}
 
-	r.logger.Debug("user updated", "id", user.ID)
+	r.logger.Debug("user updated", "id", user.ID.String())
 	return user, nil
 }

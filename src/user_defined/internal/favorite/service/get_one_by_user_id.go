@@ -10,7 +10,7 @@ import (
 
 func (f *FavoriteService) GetOneByUserID(ctx context.Context, userID uuid.UUID, animeID int) (*domain.Favorite, error) {
 	if userID == uuid.Nil {
-		f.logger.Error("favorite get, user id is nil")
+		f.logger.Warn("favorite get, user id is nil")
 		return nil, coreHttp.ErrInvalidUserParams
 	}
 
@@ -19,9 +19,10 @@ func (f *FavoriteService) GetOneByUserID(ctx context.Context, userID uuid.UUID, 
 
 	favorite, err := f.favoritesRepo.GetOneByUserID(ctxTimeout, userID, animeID)
 	if err != nil {
+		f.logger.Debug("get favorite failed", "userID", userID.String(), "error", err.Error())
 		return nil, err
 	}
 
-	f.logger.Info("get user favorite", "userId", userID.String())
+	f.logger.Debug("get user favorite", "userId", userID.String())
 	return favorite, nil
 }

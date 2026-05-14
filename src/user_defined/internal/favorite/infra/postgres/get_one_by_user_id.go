@@ -20,6 +20,7 @@ func (f *FavoritePG) GetOneByUserID(ctx context.Context, userID uuid.UUID, anime
 	err := f.pool.QueryRow(ctx, query, userID, animeID).Scan(&favorite.UserID, &favorite.AnimeID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			f.logger.Warn("favorite not found", "userID", userID.String(), "animeID", animeID)
 			return nil, coreHttp.ErrFavoriteNotFound
 		}
 		f.logger.Error("postgres get user favorite failed", "err", err.Error())

@@ -18,7 +18,7 @@ func (a *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	access, refresh, err := a.userService.Login(r.Context(), req.Email, req.Password, req.Remember, ExtractSessionMeta(r))
 	if err != nil {
-		a.logger.Error("login err", "err", err.Error())
+		a.logger.Debug("login failed", "error", err.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(err, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)

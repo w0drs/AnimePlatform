@@ -10,24 +10,25 @@ func (u *UserService) GetSessions(ctx context.Context, userId uuid.UUID) ([]doma
 
 	sessions, err := u.tokeRepo.GetUserSessions(ctx, userId)
 	if err != nil {
-		u.logger.Error("getUserSessions error", "err", err.Error(), "userId", userId.String())
+		u.logger.Debug("get user sessions failed", "error", err.Error(), "userId", userId.String())
 		return nil, err
 	}
-	var sessionsInfo = make([]domain.SessionInfo, len(sessions))
+	var sessionsInfo = make([]domain.SessionInfo, 0)
 
-	for i, session := range sessions {
+	for _, session := range sessions {
 		meta, err := u.tokeRepo.GetSessionMeta(ctx, session)
 		if err != nil {
-			u.logger.Error("failed to get session meta data", "err", err.Error(), "jwtID", session.String())
+			u.logger.Debug("failed to get session meta data", "error", err.Error(), "jwtID", session.String())
 			continue
 		}
-		sessionsInfo[i] = domain.SessionInfo{
+
+		sessionsInfo = append(sessionsInfo, domain.SessionInfo{
 			JTI:          session,
 			IP:           meta.IP,
 			Device:       meta.Device,
 			LastActivity: meta.LastActivity,
-		}
+		})
 	}
-	u.logger.Info("getSessions", "userId", userId.String())
+	u.logger.Info("get sessions", "userId", userId.String())
 	return sessionsInfo, nil
 }

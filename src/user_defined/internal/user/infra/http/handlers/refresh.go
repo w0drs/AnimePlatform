@@ -26,12 +26,11 @@ func (a *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 		a.logger.Warn("refresh parse error", "error", err.Error())
 		coreHttp.SendErrorJSON(a.logger, w, &coreHttp.ErrUnauthorized)
 		return
-
 	}
 
 	newAccessToken, newRefreshToken, err := a.userService.Refresh(r.Context(), *claims)
 	if err != nil {
-		a.logger.Warn("refresh error", "error", err.Error())
+		a.logger.Debug("refresh error", "error", err.Error())
 		var errAPI coreHttp.APIError
 		if errors.As(err, &errAPI) {
 			coreHttp.SendErrorJSON(a.logger, w, &errAPI)

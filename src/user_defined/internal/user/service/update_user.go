@@ -27,7 +27,7 @@ func (u *UserService) Update(ctx context.Context, user *domain.User) (*domain.Us
 
 	updatedUser, err := u.userRepo.Update(ctx, user)
 	if err != nil {
-		u.logger.Warn("update user error", "error", err.Error())
+		u.logger.Debug("update user error", "error", err.Error())
 		return nil, err
 	}
 

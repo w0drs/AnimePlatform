@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	comHandlers "kuronami/internal/comments/infra/http/handlers"
+	comRouter "kuronami/internal/comments/infra/http/router"
+	comPG "kuronami/internal/comments/infra/postgres"
+	comService "kuronami/internal/comments/service"
 	"kuronami/internal/core/pkg/closer"
 	"kuronami/internal/core/pkg/utils"
 	"kuronami/internal/core/postgres"
@@ -92,21 +96,30 @@ func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
 	userService := service.NewUserService(logger, userRepo, tokenRepo, jwt, sessionTTLParsed)
 	userHandlers := handlers.NewAuthHandlers(logger, userService, jwt)
 
-	muxUserDefined := router.GetAuthRouter(userHandlers, jwt)
+	muxUserDefined := router.GetAuthRouter(logger, userHandlers, jwt, redisPool)
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// Favorites //////////////////////////////////////////////////////////////////////////////////////////////////////
-	favRepo := favPG.NewFavoritePG(pool, logger)
+	favRepo := favPG.NewFavoritePG(logger, pool)
 	favServ := favService.NewFavoriteService(logger, favRepo)
 	favHandles := favHandlers.NewFavoriteHandler(logger, favServ)
-	favRoutes := favRouter.FavoriteRouter(favHandles, jwt)
+	favRoutes := favRouter.FavoriteRouter(logger, favHandles, jwt, redisPool)
 
 	favRoutes.Handle("/", muxUserDefined)
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	/// Comments ///////////////////////////////////////////////////////////////////////////////////////////////////////
+	comRepo := comPG.NewCommentsPG(logger, pool)
+	comServ := comService.NewCommentService(logger, comRepo)
+	comHandles := comHandlers.NewCommentsHandlers(logger, comServ)
+	comRoutes := comRouter.CommentsRouter(logger, comHandles, jwt, redisPool)
+
+	comRoutes.Handle("/", favRoutes)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	server := &http.Server{
 		Addr:    serverEndpoint,
-		Handler: favRoutes,
+		Handler: comRoutes,
 	}
 	return &AuthApp{
 		logger: logger,

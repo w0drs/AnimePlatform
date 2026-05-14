@@ -11,6 +11,6 @@ type FavoritePG struct {
 	logger *slog.Logger
 }
 
-func NewFavoritePG(pool *pgxpool.Pool, logger *slog.Logger) *FavoritePG {
+func NewFavoritePG(logger *slog.Logger, pool *pgxpool.Pool) *FavoritePG {
 	return &FavoritePG{pool, logger}
 }

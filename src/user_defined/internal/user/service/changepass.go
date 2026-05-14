@@ -21,13 +21,13 @@ func (u *UserService) ChangePass(ctx context.Context, userID uuid.UUID, oldPass,
 
 	user, err := u.userRepo.GetByID(ctx, userID)
 	if err != nil {
-		u.logger.Warn("user err", "err", err.Error(), "user", userID.String())
+		u.logger.Debug("get user by id failed", "user", userID.String(), "error", err.Error())
 		return err
 	}
 
 	if !security.Verify(user.Password, oldPass) {
-		u.logger.Warn("old password is invalid", "user", userID.String())
-		return coreHttp.NewErrorWithDetails(coreHttp.ErrUnauthorized, "password", "old password is invalid")
+		u.logger.Warn("incorrect old password", "user", userID.String())
+		return coreHttp.NewErrorWithDetails(coreHttp.ErrUnauthorized, "password", "incorrect old password")
 	}
 
 	newPassHashed, err := security.Hash(newPass)
@@ -38,7 +38,7 @@ func (u *UserService) ChangePass(ctx context.Context, userID uuid.UUID, oldPass,
 
 	err = u.userRepo.ChangePassword(ctx, userID, newPassHashed)
 	if err != nil {
-		u.logger.Warn("failed to change password", "error", err.Error(), "user", userID.String())
+		u.logger.Debug("failed to change password", "error", err.Error(), "user", userID.String())
 		return err
 	}
 

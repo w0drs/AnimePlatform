@@ -14,6 +14,7 @@ func (a *AuthHandlers) GetUserList(w http.ResponseWriter, r *http.Request) {
 	var req dto.GetUserListRequest
 	err := coreHttp.ParseJSONBody(a.logger, r, &req)
 	if err != nil {
+		a.logger.Warn("get user list body invalid", "error", err.Error())
 		coreHttp.SendErrorJSON(a.logger, w, err)
 		return
 	}

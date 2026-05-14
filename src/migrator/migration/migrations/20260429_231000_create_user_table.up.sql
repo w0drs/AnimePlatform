@@ -15,11 +15,11 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT valid_hashed_password CHECK (LENGTH(hashed_password) >= 60)
 );
 
-CREATE INDEX idx_users_is_active ON users(is_active) WHERE is_active = TRUE;
-CREATE INDEX idx_users_created_at ON users(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
 
-CREATE UNIQUE INDEX unique_active_email ON users(email) WHERE is_active = TRUE;
-CREATE UNIQUE INDEX unique_active_login ON users(login) WHERE is_active = TRUE;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_active_email ON users(email) WHERE is_active = TRUE;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_active_login ON users(login) WHERE is_active = TRUE;
 
 
 CREATE OR REPLACE FUNCTION prevent_user_deletion()

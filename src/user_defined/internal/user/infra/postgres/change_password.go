@@ -18,7 +18,7 @@ func (r *UserRepo) ChangePassword(ctx context.Context, userID uuid.UUID, newHash
 
 	cmdTag, err := r.pool.Exec(ctx, query, userID, newHashed)
 	if err != nil {
-		r.logger.Error("error changing password", "error", err)
+		r.logger.Error("error changing password", "user", userID.String(), "error", err.Error())
 
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -30,10 +30,11 @@ func (r *UserRepo) ChangePassword(ctx context.Context, userID uuid.UUID, newHash
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		r.logger.Warn("error changing password", "error", "no row affected (invalid user or password)")
+		r.logger.Warn("error changing password", "user", userID.String(),
+			"error", "no row affected (invalid user or password)")
 		return coreHttp.NewErrorWithDetails(coreHttp.ErrInvalidCredentials, "message", "invalid user or password")
 	}
 
-	r.logger.Debug("successfully changed password", "user", userID)
+	r.logger.Debug("successfully changed password", "user", userID.String())
 	return nil
 }

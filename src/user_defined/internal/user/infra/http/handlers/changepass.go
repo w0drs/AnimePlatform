@@ -24,7 +24,7 @@ func (a *AuthHandlers) ChangePass(w http.ResponseWriter, r *http.Request) {
 
 	errChange := a.userService.ChangePass(r.Context(), claims.UserID, req.OldPassword, req.NewPassword)
 	if errChange != nil {
-		a.logger.Error("error change password", "error", errChange.Error())
+		a.logger.Debug("error change password", "userID", claims.UserID.String(), "error", errChange.Error())
 		var errApi coreHttp.APIError
 		if errors.As(errChange, &errApi) {
 			coreHttp.SendErrorJSON(a.logger, w, &errApi)

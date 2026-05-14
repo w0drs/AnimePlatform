@@ -32,6 +32,10 @@ var (
 		StatusCode: http.StatusBadRequest,
 		ErrorCode:  "INVALID_BODY",
 	}
+	ErrInvalidPathValue = APIError{
+		StatusCode: http.StatusBadRequest,
+		ErrorCode:  "INVALID_PATH_VALUE",
+	}
 
 	// User Error
 
@@ -69,6 +73,11 @@ var (
 	ErrTokenNotFound = APIError{
 		StatusCode: http.StatusNotFound,
 		ErrorCode:  "TOKEN_NOT_FOUND",
+	}
+
+	ErrTokenIsInvalid = APIError{
+		StatusCode: http.StatusBadRequest,
+		ErrorCode:  "TOKEN_IS_INVALID",
 	}
 
 	ErrSessionMetaNotFound = APIError{

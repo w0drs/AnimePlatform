@@ -11,7 +11,7 @@ import (
 
 func (f *FavoriteService) Add(ctx context.Context, favorite domain.Favorite) error {
 	if favorite.UserID == uuid.Nil {
-		f.logger.Error("favorite add, user id is nil")
+		f.logger.Warn("favorite add, user id is nil")
 		return coreHttp.ErrInvalidUserParams
 	}
 
@@ -25,6 +25,7 @@ func (f *FavoriteService) Add(ctx context.Context, favorite domain.Favorite) err
 
 	err := f.favoritesRepo.Add(ctxTimeout, favorite.UserID, favorite.AnimeID)
 	if err != nil {
+		f.logger.Debug("add favorite failed", "userID", favorite.UserID.String(), "error", err.Error())
 		return err
 	}
 

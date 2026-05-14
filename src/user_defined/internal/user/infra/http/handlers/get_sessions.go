@@ -18,7 +18,7 @@ func (a *AuthHandlers) GetSessions(w http.ResponseWriter, r *http.Request) {
 
 	sessions, err := a.userService.GetSessions(r.Context(), claims.UserID)
 	if err != nil {
-		a.logger.Error("get sessions error", "err", err.Error())
+		a.logger.Error("get sessions error", "userID", claims.UserID.String(), "err", err.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(err, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)

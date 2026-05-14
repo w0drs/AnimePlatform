@@ -15,7 +15,7 @@ func (r *UserRepo) Deactivate(ctx context.Context, userID uuid.UUID) error {
 
 	cmdTag, err := r.pool.Exec(ctx, query, userID)
 	if err != nil {
-		r.logger.Error("deactivate user error", "error", err.Error())
+		r.logger.Error("deactivate user error", "user", userID.String(), "error", err.Error())
 		return coreHttp.ErrInternal
 	}
 
@@ -23,6 +23,6 @@ func (r *UserRepo) Deactivate(ctx context.Context, userID uuid.UUID) error {
 		return nil
 	}
 
-	r.logger.Debug("user deactivated", "user_id", userID)
+	r.logger.Debug("user deactivated", "user_id", userID.String())
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 
 func (u *UserService) GetUserList(ctx context.Context, userIDs []uuid.UUID) ([]domain.User, error) {
 	if len(userIDs) == 0 {
-		u.logger.Debug("userIDs is empty")
+		u.logger.Warn("userIDs is empty")
 		return []domain.User{}, nil
 	}
 
@@ -21,6 +21,6 @@ func (u *UserService) GetUserList(ctx context.Context, userIDs []uuid.UUID) ([]d
 		users[i].Password = ""
 	}
 
-	u.logger.Info("get user list success", "len users", len(users))
+	u.logger.Debug("get user list success", "len users", len(users))
 	return users, nil
 }

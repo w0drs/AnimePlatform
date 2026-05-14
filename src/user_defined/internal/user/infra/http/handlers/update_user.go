@@ -32,7 +32,7 @@ func (a *AuthHandlers) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		IconUrl:     req.IconUrl,
 	})
 	if err != nil {
-		a.logger.Error("error updating user", "error", err.Error())
+		a.logger.Debug("error updating user", "error", err.Error())
 		var apiErr coreHttp.APIError
 		if errors.As(err, &apiErr) {
 			coreHttp.SendErrorJSON(a.logger, w, &apiErr)

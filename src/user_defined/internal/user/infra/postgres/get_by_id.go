@@ -21,7 +21,7 @@ func (r *UserRepo) GetByID(ctx context.Context, userID uuid.UUID) (*domain.User,
 		&user.FirstName, &user.IconUrl, &user.Role,
 	)
 	if err != nil {
-		r.logger.Error("error getting user by ID", "error", err.Error())
+		r.logger.Error("error getting user by ID", "user", userID.String(), "error", err.Error())
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, coreHttp.ErrUserNotFound
 		}

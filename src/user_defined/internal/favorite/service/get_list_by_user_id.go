@@ -11,7 +11,7 @@ import (
 
 func (f *FavoriteService) GetListByUserID(ctx context.Context, userID uuid.UUID) ([]*domain.Favorite, error) {
 	if userID == uuid.Nil {
-		f.logger.Error("favorite get, user id is nil")
+		f.logger.Warn("favorite get, user id is nil")
 		return nil, coreHttp.ErrInvalidUserParams
 	}
 
@@ -20,9 +20,10 @@ func (f *FavoriteService) GetListByUserID(ctx context.Context, userID uuid.UUID)
 
 	favorites, err := f.favoritesRepo.GetListByUserID(ctxTimeout, userID)
 	if err != nil {
+		f.logger.Debug("get favorite failed", "userID", userID.String(), "error", err.Error())
 		return nil, err
 	}
 
-	f.logger.Info("get user favorites", "userId", userID.String())
+	f.logger.Debug("get user favorites", "userId", userID.String())
 	return favorites, nil
 }

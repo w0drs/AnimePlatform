@@ -17,6 +17,10 @@ func (c *CommentService) GetAnimeComments(ctx context.Context, animeID int, page
 		c.logger.Warn("page is invalid")
 		page = 1
 	}
+	if page > domain.MaxPageSize {
+		c.logger.Warn("page too large, limiting", "page", page, "max", domain.MaxPageSize)
+		page = domain.MaxPageSize
+	}
 
 	ctxTimeout, cancel := context.WithTimeout(ctx, postgres.DefaultTimeout)
 	defer cancel()
@@ -40,6 +44,10 @@ func (c *CommentService) GetNewsComments(ctx context.Context, newsID int, page i
 	if page <= 0 {
 		c.logger.Warn("page is invalid")
 		page = 1
+	}
+	if page > domain.MaxPageSize {
+		c.logger.Warn("page too large, limiting", "page", page, "max", domain.MaxPageSize)
+		page = domain.MaxPageSize
 	}
 
 	ctxTimeout, cancel := context.WithTimeout(ctx, postgres.DefaultTimeout)

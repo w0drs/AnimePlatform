@@ -13,7 +13,7 @@ func (a *AuthHandlers) GetByLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := a.userService.GetByLogin(r.Context(), login)
 	if err != nil {
-		a.logger.Error("get user by login fail", "err", err.Error())
+		a.logger.Debug("get user by login fail", "login", login, "err", err.Error())
 		var errApi coreHttp.APIError
 		if errors.As(err, &errApi) {
 			coreHttp.SendErrorJSON(a.logger, w, &errApi)
@@ -43,7 +43,7 @@ func (a *AuthHandlers) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	user, err := a.userService.GetByEmail(r.Context(), claims.Email)
 	if err != nil {
-		a.logger.Error("get user by email fail", "err", err.Error())
+		a.logger.Debug("get user by email fail", "email", claims.Email, "err", err.Error())
 		var errApi coreHttp.APIError
 		if errors.As(err, &errApi) {
 			coreHttp.SendErrorJSON(a.logger, w, &errApi)
