@@ -161,3 +161,55 @@ class AnimeRepository:
                 LIMIT %s
             """, (year, limit))
             return cur.fetchall()
+
+    @staticmethod
+    def get_all_with_filters(
+            limit: int = 100,
+            offset: int = 0,
+            year: Optional[int] = None,
+            type: Optional[str] = None,
+            min_rating: Optional[str] = None
+    ) -> List[Dict]:
+        """Получить все аниме с фильтрацией и пагинацией"""
+        with db.get_cursor() as cur:
+            query = """
+                SELECT id, title_english, image_webp_large_url, type, episodes, duration, 
+                       rating, synopsis, year
+                FROM anime
+                WHERE 1=1
+            """
+            params = []
+
+            if year:
+                query += " AND year = %s"
+                params.append(year)
+
+            if type:
+                query += " AND type = %s"
+                params.append(type)
+
+            if min_rating:
+                query += " AND rating >= %s"
+                params.append(min_rating)
+
+            query += " ORDER BY id LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
+
+            cur.execute(query, params)
+            return cur.fetchall()
+
+    @staticmethod
+    def get_by_ids(ids: List[int]) -> List[dict]:
+        """Получить аниме по списку ID"""
+        if not ids:
+            return []
+
+        placeholders = ','.join(['%s'] * len(ids))
+        with db.get_cursor() as cur:
+            query = f"""
+                SELECT * FROM anime 
+                WHERE id IN ({placeholders})
+                ORDER BY id
+            """
+            cur.execute(query, ids)
+            return cur.fetchall()

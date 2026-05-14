@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     api_port: int = 8000
     api_host: str = "0.0.0.0"
 
+    auth_host: str = "http://192.168.3.106"
+    auth_port: int = 16767
+
     database_url: Optional[str] = None
 
     # LanceDB

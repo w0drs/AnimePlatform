@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from src.anime_service.api.routes import anime, search
+from src.anime_service.api.routes import anime, search, news
 from src.anime_service.config.settings import settings
 
 
@@ -33,7 +33,7 @@ app.add_middleware(
 # Подключаем роутеры
 app.include_router(anime.router)
 app.include_router(search.router)
-
+app.include_router(news.router)
 
 @app.get("/")
 async def root():
