@@ -8,6 +8,7 @@ import (
 	comRouter "kuronami/internal/comments/infra/http/router"
 	comPG "kuronami/internal/comments/infra/postgres"
 	comService "kuronami/internal/comments/service"
+	"kuronami/internal/core/middleware"
 	"kuronami/internal/core/pkg/closer"
 	"kuronami/internal/core/pkg/utils"
 	"kuronami/internal/core/postgres"
@@ -116,10 +117,17 @@ func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
 
 	comRoutes.Handle("/", favRoutes)
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Logging middleware
+	loggingMux := http.NewServeMux()
+	loggingMux.Handle("/", middleware.Logging(logger)(comRoutes))
 
+	// Recovery middleware
+	recoveryMux := http.NewServeMux()
+	recoveryMux.Handle("/", middleware.Recovery(logger)(loggingMux))
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	server := &http.Server{
 		Addr:    serverEndpoint,
-		Handler: comRoutes,
+		Handler: recoveryMux,
 	}
 	return &AuthApp{
 		logger: logger,
