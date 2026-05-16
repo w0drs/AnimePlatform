@@ -62,103 +62,6 @@ body::before {
     pointer-events: none;
 }
 
-/* Навигация */
-.navbar {
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-.nav-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.logo {
-    font-size: 1.8rem;
-    font-weight: 800;
-    text-decoration: none;
-    color: var(--text-primary);
-    letter-spacing: -0.5px;
-}
-
-.logo span {
-    color: var(--accent-darker);
-}
-
-.nav-links {
-    display: flex;
-    gap: 2rem;
-    list-style: none;
-}
-
-.nav-links a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: all 0.3s;
-    font-weight: 500;
-    padding: 0.5rem 0;
-    position: relative;
-}
-
-.nav-links a::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--accent-darker);
-    transition: width 0.3s;
-}
-
-.nav-links a:hover::after,
-.nav-links a.active::after {
-    width: 100%;
-}
-
-.nav-links a:hover,
-.nav-links a.active {
-    color: var(--accent-darker);
-}
-
-.auth-buttons {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.btn {
-    padding: 0.5rem 1.5rem;
-    border-radius: 40px;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.btn-login {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-}
-
-.btn-login:hover {
-    border-color: var(--accent-darker);
-    color: var(--accent-darker);
-    background: var(--accent-soft);
-}
-
 /* Контейнер */
 .container {
     max-width: 1200px;
@@ -278,25 +181,47 @@ body::before {
     flex-shrink: 0;
 }
 
+/* Кнопка перехода на главный сайт */
+.btn-main {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.9rem 2rem;
+    background: var(--gradient);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.btn-main:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--accent-darker);
+    color: white;
+}
+
 /* Адаптивность */
 @media (max-width: 900px) {
     .block-content {
         flex-direction: column;
         gap: 1.5rem;
     }
-    
+
     .reverse {
         flex-direction: column;
     }
-    
+
     .block-text {
         text-align: center;
     }
-    
+
     .features-list li {
         justify-content: center;
     }
-    
+
     .brand-title {
         font-size: 2.8rem;
         text-align: center;
@@ -304,36 +229,28 @@ body::before {
 }
 
 @media (max-width: 768px) {
-    .nav-container {
-        flex-direction: column;
-    }
-
-    .nav-links {
-        gap: 1.5rem;
-    }
-    
     .container {
         padding: 1rem;
     }
-    
+
     .landing-block {
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         border-radius: 24px;
     }
-    
+
     .block-text p {
         font-size: 1rem;
     }
-    
+
     .block-text h2 {
         font-size: 1.4rem;
     }
-    
+
     .features-list li {
         font-size: 0.9rem;
     }
-    
+
     .brand-title {
         font-size: 2.2rem;
     }
@@ -343,29 +260,18 @@ body::before {
     .container {
         padding: 0.75rem;
     }
-    
+
     .landing-block {
         padding: 1.2rem;
         border-radius: 20px;
     }
-    
+
     .brand-title {
         font-size: 1.8rem;
     }
-}
 
-/* Футер */
-footer {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(4px);
-    border-top: 1px solid var(--border);
-    padding: 2rem;
-    text-align: center;
-    color: var(--text-secondary);
-    margin-top: 1rem;
-}
-
-footer p {
-    margin: 0.3rem 0;
-    font-size: 0.85rem;
+    .btn-main {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.9rem;
+    }
 }
