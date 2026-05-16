@@ -1,8 +1,6 @@
 CREATE TABLE IF NOT EXISTS anime (
     id SERIAL PRIMARY KEY,
     title_english TEXT,
-    image_webp_url TEXT,
-    image_webp_small_url TEXT,
     image_webp_large_url TEXT,
     trailer_url TEXT,
     type TEXT,
