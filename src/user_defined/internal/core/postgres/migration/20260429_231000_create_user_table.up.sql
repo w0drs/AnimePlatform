@@ -15,11 +15,11 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT valid_hashed_password CHECK (LENGTH(hashed_password) >= 60)
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active) WHERE is_active = TRUE;
-CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
+CREATE INDEX idx_users_is_active ON users(is_active) WHERE is_active = TRUE;
+CREATE INDEX idx_users_created_at ON users(created_at DESC);
 
-CREATE UNIQUE INDEX IF NOT EXISTS unique_active_email ON users(email) WHERE is_active = TRUE;
-CREATE UNIQUE INDEX IF NOT EXISTS unique_active_login ON users(login) WHERE is_active = TRUE;
+CREATE UNIQUE INDEX unique_active_email ON users(email) WHERE is_active = TRUE;
+CREATE UNIQUE INDEX unique_active_login ON users(login) WHERE is_active = TRUE;
 
 
 CREATE OR REPLACE FUNCTION prevent_user_deletion()
@@ -28,12 +28,12 @@ BEGIN
     IF OLD.is_active = TRUE THEN
        RAISE EXCEPTION 'cannot delete active account %', OLD.login
        USING ERRCODE = '42501';
-END IF;
+    END IF;
     IF OLD.role = 'admin' THEN
        RAISE EXCEPTION 'cannot delete admin user %', OLD.login
        USING ERRCODE = '42501';
-END IF;
-RETURN OLD;
+    END IF;
+    RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -48,16 +48,16 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF OLD.role <> 'admin' and NEW.role = 'admin' THEN
        RAISE EXCEPTION 'cannot upgrade account to admin ' USING ERRCODE = '42501';
-END IF;
+    END IF;
     IF OLD.role = 'admin' and NEW.role <> 'admin' THEN
        RAISE EXCEPTION 'cannot demote admin' USING ERRCODE = '42501';
-END IF;
+    END IF;
     IF OLD.role = 'admin' and NEW.is_active = FALSE THEN
         RAISE EXCEPTION 'cannot deactivate admin' USING ERRCODE = '42501';
-END IF;
+    END IF;
 
     NEW.updated_at = CURRENT_TIMESTAMP;
-RETURN NEW;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -73,12 +73,12 @@ BEGIN
     NEW.is_active = TRUE;
     IF NEW.role IS NULL or NEW.role = '' or NEW.role = ' ' THEN
         NEW.role = 'user';
-END IF;
+    END IF;
     IF NEW.role NOT IN ('user', 'moder', 'admin') THEN
         RAISE EXCEPTION 'role is invalid' USING ERRCODE = '23514';
-end if;
+    end if;
 
-RETURN NEW;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -86,4 +86,4 @@ DROP TRIGGER IF EXISTS check_user_before_create ON users;
 CREATE TRIGGER check_user_before_create
     BEFORE INSERT ON users
     FOR EACH ROW
-    EXECUTE FUNCTION prevent_create_user();
+EXECUTE FUNCTION prevent_create_user();
