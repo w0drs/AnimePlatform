@@ -41,6 +41,7 @@ func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
 	serverEndpoint := utils.GetEnv("SERVER_ENDPOINT", ":8002")
 	postgresDSN := utils.GetEnv("USER_POSTGRES_DSN", "")
 	redisDSN := utils.GetEnv("USER_REDIS_ENDPOINT", "")
+	redisPass := utils.GetEnv("USER_REDIS_PASS", "admin")
 	jwtSecret := utils.GetEnv("JWT_SECRET", "jwt-secret")
 	accessTTL := utils.GetEnv("ACCESS_TTL", "10m")
 	refreshTTL := utils.GetEnv("REFRESH_TTL", "7h")
@@ -81,7 +82,7 @@ func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
 		return nil
 	}
 	clsr.AddFunc("postgres", pool.Close)
-	redisPool, err := redis2.Open(ctx, redisDSN)
+	redisPool, err := redis2.Open(ctx, redisDSN, redisPass)
 	if err != nil {
 		logger.Warn("Redis pool open failed", "error", err.Error())
 		return nil
