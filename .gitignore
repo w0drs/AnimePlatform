@@ -2,4 +2,4 @@
 *.log
 bin/
 .env
-.venv/
+src/frontend/.venv/

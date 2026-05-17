@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings
 import os
-from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -8,7 +7,7 @@ class Settings(BaseSettings):
     anime_service: str = os.getenv("ANIME_SERVICE_ENDPOINT", "http://192.168.3.160:8001")
     news_service: str = os.getenv("NEWS_SERVICE_ENDPOINT", "http://192.168.3.160:8001")
 
-    auth_service: str = os.getenv("AUTH_SERVICE_ENDPOINT", "http://192.168.3.92:8002")
+    auth_service: str = os.getenv("AUTH_SERVICE_ENDPOINT", "http://192.168.3.160:8002")
     favorite_service: str = os.getenv("FAVORITE_SERVICE_ENDPOINT", "http://192.168.3.92:8002")
     comments_service: str = os.getenv("COMMENTS_SERVICE_ENDPOINT", "http://192.168.3.92:8002")
 
