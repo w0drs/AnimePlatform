@@ -41,7 +41,7 @@ func NewAuthApp(ctx context.Context, logger *slog.Logger) *AuthApp {
 	serverEndpoint := utils.GetEnv("SERVER_ENDPOINT", ":8002")
 	postgresDSN := utils.GetEnv("USER_POSTGRES_DSN", "")
 	redisDSN := utils.GetEnv("USER_REDIS_ENDPOINT", "")
-	redisPass := utils.GetEnv("USER_REDIS_PASS", "admin")
+	redisPass := utils.GetEnv("USER_REDIS_PASS", "redis")
 	jwtSecret := utils.GetEnv("JWT_SECRET", "jwt-secret")
 	accessTTL := utils.GetEnv("ACCESS_TTL", "10m")
 	refreshTTL := utils.GetEnv("REFRESH_TTL", "7h")

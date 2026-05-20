@@ -41,6 +41,7 @@ func AuthMiddleware(logger *slog.Logger, authService *security.JWT, pool *redis.
 
 			claims, err := authService.ParseToken(token)
 			if err != nil {
+				logger.Error("error parsing token", "error", err.Error())
 				apiErr := coreHttp.NewErrorWithDetails(coreHttp.ErrUnauthorized,
 					"authorization", "invalid or expired token")
 				coreHttp.SendErrorJSON(logger, w, &apiErr)

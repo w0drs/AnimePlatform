@@ -64,7 +64,7 @@ func (u *UserService) Refresh(ctx context.Context, claims security.Claims) (stri
 		return "", "", coreHttp.NewErrorWithDetails(coreHttp.ErrInternal, "error", err.Error())
 	}
 
-	err = u.tokeRepo.CreateRefresh(ctx, *userID, newJwtId, u.sessionTTL)
+	err = u.tokeRepo.CreateRefresh(ctx, newJwtId, *userID, u.sessionTTL)
 	if err != nil {
 		u.logger.Debug("failed to create refresh token", "jti", newJwtId.String(), "error", err.Error())
 		return "", "", err
