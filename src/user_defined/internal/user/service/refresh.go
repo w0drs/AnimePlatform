@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"github.com/google/uuid"
 	coreHttp "kuronami/internal/core/http"
 	"kuronami/internal/core/security"
@@ -13,15 +12,7 @@ func (u *UserService) Refresh(ctx context.Context, claims security.Claims) (stri
 	userID, err := u.tokeRepo.GetUserIDByRefresh(ctx, claims.JwtID)
 	if err != nil {
 		u.logger.Debug("jwtID is empty", "error", err.Error())
-		if errors.As(err, &coreHttp.ErrTokenNotFound) {
-			// еcли нет, то значит уже был refresh, украли
-			err := u.disconnection(ctx, claims)
-			if err != nil {
-				return "", "", err
-			}
-			return "", "", coreHttp.ErrInvalidCredentials
-		}
-		return "", "", coreHttp.ErrInternal
+		return "", "", err
 	}
 	// удаляем текущую сессию
 	err = u.tokeRepo.DeleteRefresh(ctx, claims.JwtID)
