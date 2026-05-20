@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль — Kuronami{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="section-title" style="font-size:2rem; margin-bottom: 1.5rem;">👤 Профиль</h1>
+
+    <div class="profile-layout">
+
+        <!-- Левая панель: табы + контент -->
+        <div class="profile-left">
+            <div class="profile-tabs">
+                <a href="?tab=favorites" class="profile-tab {% if tab == 'favorites' or not tab %}active{% endif %}">
+                    ❤️ Избранное
+                </a>
+                <a href="?tab=sessions" class="profile-tab {% if tab == 'sessions' %}active{% endif %}">
+                    🕐 Сессии
+                </a>
+                <a href="?tab=settings" class="profile-tab {% if tab == 'settings' %}active{% endif %}">
+                    ⚙️ Настройки
+                </a>
+            </div>
+
+            <div class="profile-tab-content">
+                {% if tab == 'favorites' or not tab %}
+                    {% if favorites %}
+                        <div class="profile-favorites">
+                            {% for anime in favorites %}
+                            <a href="{{ anime.url }}" class="profile-favorite-item">
+                                <img src="{{ anime.image }}" alt="{{ anime.title }}"
+                                     onerror="this.src='https://placehold.co/48x72/f5f5f0/6a9ec9?text=?'">
+                                <div class="profile-favorite-info">
+                                    <div class="profile-favorite-title">{{ anime.title }}</div>
+                                    <div class="profile-favorite-meta">
+                                        <span>{{ anime.year }}</span>
+                                        <span class="rating">★ {{ anime.rating }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="profile-empty">Вы ещё ничего не добавили в избранное.</p>
+                    {% endif %}
+
+                {% elif tab == 'sessions' %}
+                    {% if sessions %}
+                        <div class="profile-sessions">
+                            {% for s in sessions %}
+                            <div class="profile-session-item">
+                                <div class="profile-session-icon">🖥️</div>
+                                <div class="profile-session-info">
+                                    <div class="profile-session-device">{{ s.device }}</div>
+                                    <div class="profile-session-meta">{{ s.ip }} · {{ s.last_activity }}</div>
+                                </div>
+                                {% if s.current %}
+                                <span class="profile-session-badge">Текущая</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="profile-empty">Нет активных сессий.</p>
+                    {% endif %}
+
+                {% elif tab == 'settings' %}
+                    <div class="profile-settings">
+                        <div class="profile-setting-row">
+                            <label>Email</label>
+                            <span>{{ user.email }}</span>
+                        </div>
+                        <div class="profile-setting-row">
+                            <label>Пароль</label>
+                            <span>••••••••</span>
+                            <button class="profile-change-link" onclick="openModal('modal-password')">Изменить</button>
+                        </div>
+                        <div class="profile-setting-row profile-setting-row--danger">
+                            <label>Сессии</label>
+                            <button class="profile-danger-link" onclick="openModal('modal-sessions')">Удалить все сессии</button>
+                        </div>
+                        <div class="profile-setting-row profile-setting-row--danger">
+                            <label>Аккаунт</label>
+                            <button class="profile-danger-link" onclick="openModal('modal-delete-1')">Удалить аккаунт</button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Правая панель: карточка пользователя -->
+        <div class="profile-right">
+            <div class="profile-avatar-wrap">
+                {% if user.icon_url %}
+                    <img src="{{ user.icon_url }}" alt="Аватар" class="profile-avatar">
+                {% else %}
+                    <img src="https://storage.yandexcloud.net/kuronami-images/default1.jpg" alt="Аватар" class="profile-avatar">
+                {% endif %}
+            </div>
+
+            <div class="profile-username">{{ user.login }}</div>
+
+            <div class="profile-info-block">
+                <div class="profile-info-row">
+                    <span class="profile-info-label">Имя</span>
+                    <span class="profile-info-value">{{ user.first_name or 'Anonim' }}</span>
+                </div>
+                <div class="profile-info-row">
+                    <span class="profile-info-label">О себе</span>
+                    <span class="profile-info-value">{{ user.description or '—' }}</span>
+                </div>
+            </div>
+
+            <button class="profile-edit-btn" onclick="openModal('modal-profile')">✏️ Изменить профиль</button>
+
+            <form action="/logout" method="post" style="width: 100%">
+                <button type="submit" class="profile-logout-btn">Выйти</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- ======= МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ ПРОФИЛЯ ======= -->
+<div class="modal-overlay" id="modal-profile" onclick="handleOverlayClick(event, 'modal-profile')">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Редактировать профиль</h3>
+            <button class="modal-close" onclick="closeModal('modal-profile')">✕</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Выбор иконки -->
+            <div class="modal-field">
+                <label class="modal-label">Иконка профиля</label>
+                <div class="avatar-grid" id="avatar-grid">
+                    {% set avatars = [
+                        "default1.jpg", "default2.jpg", "default3.jpg",
+                        "default4.jpg", "default5.jpg", "default6.jpg",
+                        "default7.jpg", "default8.jpg", "default9.jpg", "default10.jpg"
+                    ] %}
+                    {% for av in avatars %}
+                    <div class="avatar-option {% if user.icon_url and av in user.icon_url %}selected{% elif not user.icon_url and av == 'default1.jpg' %}selected{% endif %}"
+                         data-url="https://storage.yandexcloud.net/kuronami-images/{{ av }}"
+                         onclick="selectAvatar(this)">
+                        <img src="https://storage.yandexcloud.net/kuronami-images/{{ av }}" alt="{{ av }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="selected-avatar-url" value="{{ user.icon_url or 'https://storage.yandexcloud.net/kuronami-images/default1.jpg' }}">
+            </div>
+
+            <!-- Имя -->
+            <div class="modal-field">
+                <label class="modal-label" for="edit-firstname">Имя</label>
+                <input class="modal-input" type="text" id="edit-firstname"
+                       placeholder="Ваше имя" value="{{ user.first_name or '' }}">
+            </div>
+
+            <!-- О себе -->
+            <div class="modal-field">
+                <label class="modal-label" for="edit-description">О себе</label>
+                <textarea class="modal-input modal-textarea" id="edit-description"
+                          placeholder="Расскажите о себе">{{ user.description or '' }}</textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeModal('modal-profile')">Отмена</button>
+            <button class="modal-btn modal-btn--primary" onclick="confirmSave('modal-profile', submitProfile)">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= МОДАЛЬНОЕ ОКНО: ИЗМЕНЕНИЕ ПАРОЛЯ ======= -->
+<div class="modal-overlay" id="modal-password" onclick="handleOverlayClick(event, 'modal-password')">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Изменить пароль</h3>
+            <button class="modal-close" onclick="closeModal('modal-password')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-field">
+                <label class="modal-label" for="old-password">Текущий пароль</label>
+                <input class="modal-input" type="password" id="old-password" placeholder="Введите текущий пароль">
+            </div>
+            <div class="modal-field">
+                <label class="modal-label" for="new-password">Новый пароль</label>
+                <input class="modal-input" type="password" id="new-password" placeholder="Введите новый пароль">
+            </div>
+            <div class="modal-field">
+                <label class="modal-label" for="confirm-password">Подтверждение пароля</label>
+                <input class="modal-input" type="password" id="confirm-password" placeholder="Повторите новый пароль">
+            </div>
+            <div class="modal-error" id="password-error"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeModal('modal-password')">Отмена</button>
+            <button class="modal-btn modal-btn--primary" onclick="confirmSave('modal-password', submitPassword)">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= МОДАЛЬНОЕ ОКНО: ПОДТВЕРЖДЕНИЕ СОХРАНЕНИЯ ======= -->
+<div class="modal-overlay" id="modal-confirm" onclick="handleOverlayClick(event, 'modal-confirm')">
+    <div class="modal modal--confirm">
+        <div class="modal-header">
+            <h3 class="modal-title">Подтвердите сохранение</h3>
+        </div>
+        <div class="modal-body">
+            <p class="modal-confirm-text">Вы уверены, что хотите сохранить изменения?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeModal('modal-confirm')">Отмена</button>
+            <button class="modal-btn modal-btn--primary" id="confirm-yes-btn">Да, сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= УДАЛЕНИЕ АККАУНТА: шаг 1 ======= -->
+<div class="modal-overlay" id="modal-delete-1" onclick="handleOverlayClick(event, 'modal-delete-1')">
+    <div class="modal modal--confirm">
+        <div class="modal-header">
+            <h3 class="modal-title">Удаление аккаунта</h3>
+            <button class="modal-close" onclick="closeModal('modal-delete-1')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-confirm-text">Вы уверены, что хотите удалить аккаунт? Это действие необратимо.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeModal('modal-delete-1')">Отмена</button>
+            <button class="modal-btn modal-btn--danger" onclick="closeModal('modal-delete-1'); openModal('modal-delete-2')">Да, удалить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= УДАЛЕНИЕ АККАУНТА: шаг 2 ======= -->
+<div class="modal-overlay" id="modal-delete-2" onclick="handleOverlayClick(event, 'modal-delete-2')">
+    <div class="modal modal--confirm">
+        <div class="modal-header">
+            <h3 class="modal-title">Точно уверены?</h3>
+            <button class="modal-close" onclick="closeModal('modal-delete-2')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-confirm-text">Все ваши данные, избранное и история будут удалены без возможности восстановления.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeModal('modal-delete-2')">Отмена</button>
+            <button class="modal-btn modal-btn--danger" onclick="closeModal('modal-delete-2'); openModal('modal-delete-3')">Да, точно удалить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= УДАЛЕНИЕ АККАУНТА: шаг 3 ======= -->
+<div class="modal-overlay" id="modal-delete-3" onclick="handleOverlayClick(event, 'modal-delete-3')">
+    <div class="modal modal--confirm">
+        <div class="modal-header">
+            <h3 class="modal-title">Последнее предупреждение</h3>
+            <button class="modal-close" onclick="closeModal('modal-delete-3')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-confirm-text">Точно точно уверены? После этого аккаунт будет удалён навсегда.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeModal('modal-delete-3')">Нет, оставить</button>
+            <button class="modal-btn modal-btn--danger" onclick="submitDeleteAccount()">Удалить навсегда</button>
+        </div>
+    </div>
+</div>
+<!-- ======= УДАЛЕНИЕ СЕССИЙ ======= -->
+<div class="modal-overlay" id="modal-sessions" onclick="handleOverlayClick(event, 'modal-sessions')">
+    <div class="modal modal--confirm">
+        <div class="modal-header">
+            <h3 class="modal-title">Удалить все сессии</h3>
+            <button class="modal-close" onclick="closeModal('modal-sessions')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-confirm-text">Вы действительно хотите удалить все сессии? Вы также выйдете из аккаунта на всех устройствах.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeModal('modal-sessions')">Отмена</button>
+            <button class="modal-btn modal-btn--danger" onclick="submitDeleteSessions()">Удалить все</button>
+        </div>
+    </div>
+</div>
+<script>
+    // --- Управление модальными окнами ---
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function handleOverlayClick(event, id) {
+        if (event.target === event.currentTarget) closeModal(id);
+    }
+
+    // --- Двойное подтверждение ---
+    function confirmSave(sourceModalId, callback) {
+        closeModal(sourceModalId);
+        openModal('modal-confirm');
+        document.getElementById('confirm-yes-btn').onclick = function () {
+            closeModal('modal-confirm');
+            callback();
+        };
+    }
+
+    // --- Выбор аватара ---
+    function selectAvatar(el) {
+        document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selected-avatar-url').value = el.dataset.url;
+    }
+
+    // --- Отправка профиля ---
+    function submitProfile() {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/settings/profile';
+
+        const fields = {
+            first_name: document.getElementById('edit-firstname').value,
+            description: document.getElementById('edit-description').value,
+            icon_url: document.getElementById('selected-avatar-url').value,
+        };
+
+        for (const [key, value] of Object.entries(fields)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // --- Отправка пароля ---
+    function submitPassword() {
+        const oldPwd = document.getElementById('old-password').value;
+        const newPwd = document.getElementById('new-password').value;
+        const confirmPwd = document.getElementById('confirm-password').value;
+        const errorEl = document.getElementById('password-error');
+
+        if (newPwd !== confirmPwd) {
+            errorEl.textContent = 'Пароли не совпадают';
+            openModal('modal-password');
+            return;
+        }
+        if (newPwd.length < 8) {
+            errorEl.textContent = 'Пароль должен быть не менее 8 символов';
+            openModal('modal-password');
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/settings/password';
+
+        const fields = { old_password: oldPwd, new_password: newPwd };
+        for (const [key, value] of Object.entries(fields)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function submitDeleteAccount() {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/settings/delete';
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function submitDeleteSessions() {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/settings/sessions/delete-all';
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+{% endblock %}

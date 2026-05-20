@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Вход — Kuronami{% endblock %}
+{% block title %}Регистрация — Kuronami{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -88,6 +88,22 @@
     background: #fff;
 }
 
+.login-field input.invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px #fee2e2;
+}
+
+.field-hint {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.field-error {
+    font-size: 0.75rem;
+    color: #dc2626;
+    display: none;
+}
+
 .login-submit {
     width: 100%;
     padding: 0.85rem;
@@ -167,38 +183,107 @@
     <div class="login-card">
 
         <div class="login-logo">Kuro<span>nami</span></div>
-        <div class="login-subtitle">Войдите, чтобы продолжить</div>
+        <div class="login-subtitle">Создайте аккаунт</div>
 
         {% if error %}
         <div class="login-error">{{ error }}</div>
         {% endif %}
 
-        <form method="post" action="{{ url_for('login') }}">
+        <form method="post" action="{{ url_for('register_post') }}" id="register-form">
             <div class="login-fields">
+
+                <div class="login-field">
+                    <label for="login">Логин</label>
+                    <input type="text" id="login" name="login"
+                           placeholder="username"
+                           value="{{ form.login or '' }}"
+                           autocomplete="username" required>
+                    <span class="field-error" id="error-login"></span>
+                </div>
+
                 <div class="login-field">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email"
                            placeholder="your@email.com"
-                           value="{{ email or '' }}"
+                           value="{{ form.email or '' }}"
                            autocomplete="email" required>
+                    <span class="field-error" id="error-email"></span>
                 </div>
+
                 <div class="login-field">
                     <label for="password">Пароль</label>
                     <input type="password" id="password" name="password"
                            placeholder="••••••••"
-                           autocomplete="current-password" required>
+                           autocomplete="new-password" required>
+                    <span class="field-hint">Минимум 8 символов</span>
+                    <span class="field-error" id="error-password"></span>
                 </div>
+
+                <div class="login-field">
+                    <label for="confirm-password">Подтверждение пароля</label>
+                    <input type="password" id="confirm-password" name="confirm_password"
+                           placeholder="••••••••"
+                           autocomplete="new-password" required>
+                    <span class="field-error" id="error-confirm"></span>
+                </div>
+
             </div>
 
-            <button type="submit" class="login-submit">Войти</button>
+            <button type="submit" class="login-submit">Зарегистрироваться</button>
         </form>
 
         <div class="login-divider">или</div>
 
         <div class="login-footer">
-            Нет аккаунта? <a href="{{ url_for('register_get') }}">Зарегистрироваться</a>
+            Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>
         </div>
 
     </div>
 </div>
+
+<script>
+document.getElementById('register-form').addEventListener('submit', function(e) {
+    let valid = true;
+
+    const login = document.getElementById('login');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const confirm = document.getElementById('confirm-password');
+
+    // Сброс
+    [login, email, password, confirm].forEach(el => {
+        el.classList.remove('invalid');
+    });
+    document.querySelectorAll('.field-error').forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+    });
+
+    function showError(inputEl, errorId, msg) {
+        inputEl.classList.add('invalid');
+        const err = document.getElementById(errorId);
+        err.textContent = msg;
+        err.style.display = 'block';
+        valid = false;
+    }
+
+    if (login.value.trim().length < 3) {
+        showError(login, 'error-login', 'Логин должен быть не менее 3 символов');
+    }
+
+    if (!email.value.includes('@')) {
+        showError(email, 'error-email', 'Введите корректный email');
+    }
+
+    if (password.value.length < 8) {
+        showError(password, 'error-password', 'Пароль должен быть не менее 8 символов');
+    }
+
+    if (password.value !== confirm.value) {
+        showError(confirm, 'error-confirm', 'Пароли не совпадают');
+    }
+
+    if (!valid) e.preventDefault();
+});
+</script>
 {% endblock %}

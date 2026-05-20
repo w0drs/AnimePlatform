@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Kuronami — Аниме-энциклопедия с рекомендациями{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <h1>Kuronami — <span class="accent">твоя</span> аниме-энциклопедия</h1>
+        <p>Гибридные рекомендации на основе коллаборативной и контентной фильтрации</p>
+        <div class="search-box">
+            <input type="text" placeholder="Поиск аниме, персонажей, студий...">
+            <button>Найти</button>
+        </div>
+    </div>
+
+    <!-- Рекомендуемые аниме (5 средних карточек 3:5) -->
+    <section>
+        <h2 class="section-title">🎯 Рекомендуемые аниме</h2>
+        <div class="recommended-grid">
+            {% for anime in recommended %}
+            <div class="recommend-card">
+                <img src="{{ anime.image }}" alt="{{ anime.title }}" class="recommend-image"
+                     onerror="this.src='https://placehold.co/600x1000/f5f5f0/6a9ec9?text={{ anime.title | urlencode }}'">
+                <div class="recommend-info">
+                    <div class="recommend-title">{{ anime.title }}</div>
+                    <div class="recommend-meta">
+                        <span>{{ anime.year }}</span>
+                        <span class="rating">★ {{ anime.rating }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Популярные аниме (большие постеры) -->
+    <section>
+        <h2 class="section-title">🔥 Популярное на этой неделе</h2>
+        <div class="popular-grid">
+            {% for anime in popular %}
+            <div class="popular-card">
+                <img src="{{ anime.image }}" alt="{{ anime.title }}" class="popular-image"
+                     onerror="this.src='https://placehold.co/600x1067/f5f5f0/6a9ec9?text={{ anime.title | urlencode }}'">
+                <div class="popular-info">
+                    <div class="popular-title">{{ anime.title }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
