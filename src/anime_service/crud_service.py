@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import uvicorn
 
 from src.anime_service.api.routes import anime, search, news
 from src.anime_service.config.settings import settings
@@ -41,7 +42,6 @@ async def root():
 
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(
         "crud_service:app",
         host=settings.api_host,
