@@ -14,7 +14,7 @@ router = APIRouter(prefix="/anime", tags=["anime"])
 async def get_all_anime(
         page: int = Query(1, ge=1),
         size: int = Query(20, ge=1, le=100),
-        user: Optional[dict] = Depends(get_current_user_optional)  # опционально, для логирования
+        user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """Получить список всех аниме (публичный)"""
     offset = (page - 1) * size
