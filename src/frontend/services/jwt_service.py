@@ -19,7 +19,7 @@ class JWTService:
     def _parse_local(self, token: str) -> dict | None:
         try:
             return jwt.decode(token, settings.jwt_secret_key, algorithms=["HS256"])
-        except jwt.InvalidTokenError:
+        except jwt.InvalidTokenError as e:
             return None
 
     async def verify(self, request: Request) -> tuple[dict, bool]:
@@ -28,10 +28,8 @@ class JWTService:
         needs_refresh — True если access_token истёк/отсутствует, надо редиректить на /refresh
         """
         token = self.get_token_from_cookie(request)
-
         if not token:
             return {}, True
-
         payload = self._parse_local(token)
         if payload is not None:
             return payload, False

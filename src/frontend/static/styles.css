@@ -1378,3 +1378,863 @@ button.profile-danger-link {
     font-family: inherit;
     padding: 0;
 }
+
+/* ======================================== */
+/* СТИЛИ ДЛЯ СТРАНИЦЫ АНИМЕ (anime_detail)  */
+/* ======================================== */
+
+.anime-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Основной блок */
+.anime-main {
+    display: flex;
+    gap: 2.5rem;
+    margin-bottom: 2rem;
+    background: rgba(253, 255, 245, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 32px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.anime-poster {
+    flex-shrink: 0;
+    width: 280px;
+}
+
+.anime-poster img {
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.3s ease;
+}
+
+.anime-poster img:hover {
+    transform: scale(1.02);
+}
+
+.anime-info-main {
+    flex: 1;
+}
+
+.anime-title-main {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 1.2rem;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+}
+
+.anime-metadata {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.meta-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.meta-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 85px;
+}
+
+.meta-value {
+    color: var(--text-secondary);
+}
+
+.anime-synopsis h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--text-primary);
+}
+
+.anime-synopsis p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+.anime-background {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+/* Блок с трейлером (кнопка) */
+.anime-trailer {
+    background: rgba(253, 255, 245, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 32px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.trailer-button-wrapper {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+
+.trailer-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--accent-darker);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.trailer-button:hover {
+    background: var(--accent-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.play-icon {
+    font-size: 1.3rem;
+}
+
+.trailer-hint {
+    margin-top: 12px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Похожие аниме */
+.similar-anime {
+    margin-bottom: 2rem;
+}
+
+.similar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.2rem;
+}
+
+.similar-card {
+    background: rgba(253, 255, 245, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.similar-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+}
+
+.similar-card img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    background: var(--bg-gray-light);
+}
+
+.similar-info {
+    padding: 0.6rem;
+    text-align: center;
+}
+
+.similar-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.similar-year {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.similar-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    background: rgba(253, 255, 245, 0.95);
+    border-radius: 16px;
+}
+
+/* Комментарии */
+.comments-section {
+    background: rgba(253, 255, 245, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 32px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.comment-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.comment-avatar {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+}
+
+.comment-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--bg-gray-light);
+}
+
+.comment-input-area {
+    flex: 1;
+}
+
+.comment-input-area textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: white;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 80px;
+    transition: all 0.3s;
+}
+
+.comment-input-area textarea:focus {
+    outline: none;
+    border-color: var(--accent-darker);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.btn-submit {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    background: var(--gradient);
+    border: none;
+    border-radius: 30px;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-submit:hover {
+    background: var(--accent-darker);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.comment-login-prompt {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-secondary);
+    background: var(--bg-gray-light);
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+}
+
+.comment-login-prompt a {
+    color: var(--accent-darker);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.comment-login-prompt a:hover {
+    text-decoration: underline;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.comment-item {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.comment-item.reply {
+    margin-left: 3rem;
+    border-bottom: none;
+    padding-top: 0.8rem;
+}
+
+.comment-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+.comment-content {
+    flex: 1;
+}
+
+.comment-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    margin-bottom: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.comment-author {
+    font-weight: 700;
+    color: var(--accent-darker);
+    font-size: 0.9rem;
+}
+
+.comment-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.comment-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+
+.comment-tag {
+    color: var(--accent-darker);
+    font-weight: 600;
+    background: var(--accent-soft);
+    padding: 0.1rem 0.3rem;
+    border-radius: 8px;
+    margin-right: 0.3rem;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.comment-reply {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.comment-reply:hover {
+    color: var(--accent-darker);
+}
+
+.comments-pagination {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* Адаптивность для страницы аниме */
+@media (max-width: 900px) {
+    .anime-main {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .anime-poster {
+        width: 240px;
+    }
+
+    .anime-metadata {
+        grid-template-columns: 1fr;
+    }
+
+    .meta-row {
+        justify-content: center;
+    }
+
+    .comment-item.reply {
+        margin-left: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .anime-page {
+        padding: 1rem;
+    }
+
+    .anime-main {
+        padding: 1.5rem;
+    }
+
+    .anime-title-main {
+        font-size: 1.5rem;
+    }
+
+    .similar-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+
+    .comment-item.reply {
+        margin-left: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .comment-form {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .comment-item.reply {
+        margin-left: 0.5rem;
+    }
+
+    .trailer-button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ======================================== */
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ КАТАЛОГА        */
+/* ======================================== */
+
+/* Стили для контейнера изображения с оверлеем */
+.anime-image-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+}
+
+.anime-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0) 100%);
+    padding: 1rem 0.5rem 0.5rem;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.anime-image-container:hover .anime-overlay {
+    opacity: 1;
+}
+
+.anime-overlay-title {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.2rem;
+}
+
+.anime-overlay-rating {
+    color: #eab308;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Стили для пустого каталога */
+.empty-catalog {
+    text-align: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    grid-column: 1 / -1;
+}
+
+/* Стили для кнопок фильтров */
+.btn-filter {
+    background: var(--gradient);
+    border: none;
+    color: var(--text-primary);
+    padding: 0.7rem 1.2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.btn-filter:hover {
+    background: var(--accent-darker);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-filter-reset {
+    display: inline-block;
+    width: 100%;
+    margin-top: 0.5rem;
+    text-align: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.6rem 1.2rem;
+    border-radius: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-filter-reset:hover {
+    border-color: var(--accent-darker);
+    color: var(--accent-darker);
+    background: var(--accent-soft);
+}
+
+/* Стиль для иконки в заголовке */
+.section-icon {
+    vertical-align: middle;
+    margin-right: 0.3rem;
+}
+
+/* Адаптивность для каталога на мобильных */
+@media (max-width: 768px) {
+    .anime-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .anime-image-container {
+        height: 210px;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+}
+
+/* ======================================== */
+/* СТИЛИ ДЛЯ СТРАНИЦЫ НОВОСТЕЙ              */
+/* ======================================== */
+
+/* Стили для списка новостей */
+.news-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.news-item {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    transition: all 0.3s;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+}
+
+.news-item:hover {
+    transform: translateX(6px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+}
+
+.news-image {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 16px;
+    background: var(--bg-gray-light);
+    flex-shrink: 0;
+}
+
+.news-content {
+    flex: 1;
+}
+
+.news-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-darker);
+    font-weight: 600;
+}
+
+.news-date {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.news-excerpt {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.empty-news {
+    text-align: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    color: var(--text-secondary);
+}
+
+/* Адаптивность для новостей */
+@media (max-width: 768px) {
+    .news-item {
+        flex-direction: column;
+    }
+
+    .news-image {
+        width: 100%;
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .news-title {
+        font-size: 1rem;
+    }
+
+    .news-excerpt {
+        font-size: 0.85rem;
+    }
+}
+
+/* ======================================== */
+/* СТИЛИ ДЛЯ СТРАНИЦЫ ОТДЕЛЬНОЙ НОВОСТИ     */
+/* ======================================== */
+
+.news-detail-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.news-detail {
+    background: rgba(253, 255, 245, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 32px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.news-detail-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+}
+
+.news-detail-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin-bottom: 0.8rem;
+}
+
+.news-detail-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.news-detail-date {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.news-detail-author {
+    color: var(--accent-darker);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.news-detail-image {
+    margin-bottom: 1.5rem;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.news-detail-image img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+
+.news-detail-content {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.news-detail-content p {
+    margin-bottom: 1rem;
+}
+
+.news-detail-content h2 {
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    margin: 1.5rem 0 0.8rem;
+}
+
+.news-detail-content h3 {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    margin: 1.2rem 0 0.6rem;
+}
+
+.news-detail-content ul,
+.news-detail-content ol {
+    margin: 0.5rem 0 1rem 1.5rem;
+}
+
+.news-detail-content strong {
+    color: var(--text-primary);
+}
+
+.news-detail-content a {
+    color: var(--accent-darker);
+    text-decoration: none;
+}
+
+.news-detail-content a:hover {
+    text-decoration: underline;
+}
+
+.news-detail-tags {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.tags-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.news-tag {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--accent-darker);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.news-tag:hover {
+    background: var(--accent);
+    border-color: var(--accent-darker);
+}
+
+.back-to-news {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.btn-back {
+    display: inline-block;
+    padding: 0.7rem 1.8rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-back:hover {
+    border-color: var(--accent-darker);
+    color: var(--accent-darker);
+    background: var(--accent-soft);
+    transform: translateY(-2px);
+}
+
+/* Адаптивность для страницы новости */
+@media (max-width: 768px) {
+    .news-detail-page {
+        padding: 1rem;
+    }
+
+    .news-detail {
+        padding: 1.5rem;
+    }
+
+    .news-detail-title {
+        font-size: 1.5rem;
+    }
+
+    .news-detail-content {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .news-detail-title {
+        font-size: 1.3rem;
+    }
+
+    .news-detail-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+}

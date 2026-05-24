@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     anime_service: str = os.getenv("ANIME_SERVICE_ENDPOINT", "http://192.168.3.160:8001")
     news_service: str = os.getenv("NEWS_SERVICE_ENDPOINT", "http://192.168.3.160:8001")
 
-    auth_service: str = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost:8002")
-    user_service: str = os.getenv("USER_SERVICE_ENDPOINT", "http://localhost:8002")
+    auth_service: str = os.getenv("AUTH_SERVICE_ENDPOINT", "http://192.168.3.106:8002")
+    user_service: str = os.getenv("USER_SERVICE_ENDPOINT", "http://192.168.3.106:8002")
     comments_service: str = os.getenv("COMMENTS_SERVICE_ENDPOINT", "http://localhost:8002")
 
     frontend_port: int = int(os.getenv("FRONTEND_PORT", 8000))

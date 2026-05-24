@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}{{ news.title if news else 'Новость' }} — Kuronami{% endblock %}
+
+{% block content %}
+<div class="container news-detail-page">
+    {% if news %}
+    <!-- Основная новость -->
+    <div class="news-detail">
+        <div class="news-detail-header">
+            <h1 class="news-detail-title">{{ news.title }}</h1>
+            <div class="news-detail-meta">
+                <span class="news-detail-date">{{ news.created_at or news.date }}</span>
+                {% if news.author %}
+                <span class="news-detail-author">Автор: {{ news.author }}</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if news.image_url %}
+        <div class="news-detail-image">
+            <img src="{{ news.image_url }}" alt="{{ news.title }}" onerror="this.src='https://placehold.co/800x400/f5f5f0/6a9ec9?text={{ news.title|urlencode }}'">
+        </div>
+        {% endif %}
+        
+        <div class="news-detail-content">
+            {{ news.content|safe }}
+        </div>
+        
+        {% if news.tags %}
+        <div class="news-detail-tags">
+            <span class="tags-label">Теги:</span>
+            {% for tag in news.tags %}
+            <a href="/news?tag={{ tag }}" class="news-tag">{{ tag }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Комментарии -->
+    <div class="comments-section">
+        <h2 class="section-title">Комментарии</h2>
+
+        <!-- Форма добавления комментария -->
+        {% if is_authorized %}
+        <div class="comment-form">
+            <div class="comment-avatar">
+                <img src="{{ user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=U' }}" alt="User">
+            </div>
+            <div class="comment-input-area">
+                <textarea id="comment-text" placeholder="Написать комментарий..."></textarea>
+                <button class="btn-submit" onclick="submitComment()">Отправить</button>
+            </div>
+        </div>
+        {% else %}
+        <div class="comment-login-prompt">
+            <p><a href="{{ url_for('login') }}">Войдите</a>, чтобы оставить комментарий</p>
+        </div>
+        {% endif %}
+
+        <!-- Список комментариев -->
+        <div class="comments-list" id="comments-list">
+            {% for comment in comments %}
+            <div class="comment-item" id="comment-{{ comment.id }}">
+                <div class="comment-avatar">
+                    <img src="{{ comment.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (comment.username|first|upper if comment.username else 'U') }}"
+                         alt="{{ comment.username or 'User' }}">
+                </div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="comment-author">{{ comment.username or 'Аноним' }}</span>
+                        <span class="comment-date">{{ comment.created_at or 'только что' }}</span>
+                    </div>
+                    <div class="comment-text">{{ comment.text or '' }}</div>
+                    <div class="comment-actions">
+                        <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ comment.username or '' }}')">Ответить</button>
+                    </div>
+
+                    {% for reply in comment.replies %}
+                    <div class="comment-item reply">
+                        <div class="comment-avatar">
+                            <img src="{{ reply.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (reply.username|first|upper if reply.username else 'U') }}"
+                                 alt="{{ reply.username or 'User' }}">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">{{ reply.username or 'Аноним' }}</span>
+                                <span class="comment-date">{{ reply.created_at or 'только что' }}</span>
+                            </div>
+                            <div class="comment-text">
+                                {% if reply.tagged_username %}
+                                <span class="comment-tag">@{{ reply.tagged_username }}</span>
+                                {% endif %}
+                                {{ reply.text or '' }}
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ reply.username or '' }}')">Ответить</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="comment-empty">Пока нет комментариев. Будьте первым!</div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация комментариев -->
+        {% if total_pages is defined and total_pages and total_pages > 1 %}
+        <div class="pagination comments-pagination">
+            {% for p in range(1, total_pages + 1) %}
+            <span class="page-link {% if p == current_page %}active{% endif %}"
+                  onclick="loadCommentsPage({{ p }})">{{ p }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Кнопка "Назад к новостям" -->
+    <div class="back-to-news">
+        <a href="{{ url_for('news') }}" class="btn-back">
+            ← Вернуться к списку новостей
+        </a>
+    </div>
+    
+    {% else %}
+    <div class="error-message">
+        <h2>Новость не найдена</h2>
+        <p>К сожалению, запрашиваемая новость не существует или была удалена.</p>
+        <a href="{{ url_for('news') }}" class="btn btn-register">Вернуться к новостям</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function submitComment() {
+    const textarea = document.getElementById('comment-text');
+    const text = textarea.value.trim();
+    if (!text) return;
+
+    fetch('/api/news/comments/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            news_id: {{ news.id if news else 0 }},
+            text: text,
+            parent_id: window.replyParentId || null
+        })
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Ошибка при отправке комментария');
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при отправке. Попробуйте позже.');
+    });
+}
+
+function replyToComment(parentId, username) {
+    const textarea = document.getElementById('comment-text');
+    if (!textarea) return;
+    if (username) {
+        textarea.value = '@' + username + ' ';
+    }
+    textarea.focus();
+    window.replyParentId = parentId;
+}
+
+function loadCommentsPage(page) {
+    location.href = window.location.pathname + '?page=' + page;
+}
+</script>
+{% endblock %}

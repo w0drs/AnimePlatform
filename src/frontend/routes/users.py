@@ -5,7 +5,6 @@ from fastapi import APIRouter, Request, Form
 from typing import Optional
 from pathlib import Path
 
-from src.frontend.services.auth_service import auth_service
 from src.frontend.services.jwt_service import jwt_service
 from src.frontend.schemas import users
 from src.frontend.services.user_service import *
@@ -73,7 +72,7 @@ async def logout(request: Request):
             response = await client.post(
                 f"{settings.auth_service}/auth/logout",
                 cookies=request.cookies,
-                headers={"Authorization": f"Bearer {request.cookies.get("access_token")}"}
+                headers={"Authorization": f'Bearer {request.cookies.get("access_token")}'}
             )
         except Exception as e:
             print("exception", e)
