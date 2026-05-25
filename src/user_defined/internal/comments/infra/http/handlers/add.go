@@ -8,6 +8,7 @@ import (
 	coreHttp "kuronami/internal/core/http"
 	"kuronami/internal/core/middleware"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -18,12 +19,27 @@ func (h *CommentsHandlers) AddAnimeComment(w http.ResponseWriter, r *http.Reques
 		coreHttp.SendErrorJSON(h.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
+	animeID, err := strconv.Atoi(r.PathValue("anime_id"))
+	if err != nil {
+		h.logger.Warn("anime_id is invalid")
+		validErr := coreHttp.NewValidationError("anime_id", "anime_id is invalid")
+		coreHttp.SendErrorJSON(h.logger, w, &validErr)
+		return
+	}
+
 	var req dto.AddAnimeCommentRequest
 	if errBody := coreHttp.ParseJSONBody(h.logger, r, &req); errBody != nil {
 		h.logger.Warn("invalid body", "error", errBody.Error())
 		coreHttp.SendErrorJSON(h.logger, w, errBody)
 		return
 	}
+	if animeID != req.AnimeID {
+		h.logger.Warn("anime_id is invalid")
+		validErr := coreHttp.NewValidationError("anime_id", "anime_id is invalid")
+		coreHttp.SendErrorJSON(h.logger, w, &validErr)
+		return
+	}
+
 	var taggedUserID *uuid.UUID
 	if req.TaggedUserID != "" {
 		uuidParse, err := uuid.Parse(req.TaggedUserID)
@@ -76,12 +92,28 @@ func (h *CommentsHandlers) AddNewsComment(w http.ResponseWriter, r *http.Request
 		coreHttp.SendErrorJSON(h.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
+
+	newsID, err := strconv.Atoi(r.PathValue("news_id"))
+	if err != nil {
+		h.logger.Warn("news_id is invalid")
+		validErr := coreHttp.NewValidationError("news_id", "news_id is invalid")
+		coreHttp.SendErrorJSON(h.logger, w, &validErr)
+		return
+	}
+
 	var req dto.AddNewsCommentRequest
 	if errBody := coreHttp.ParseJSONBody(h.logger, r, &req); errBody != nil {
 		h.logger.Warn("invalid body", "error", errBody.Error())
 		coreHttp.SendErrorJSON(h.logger, w, errBody)
 		return
 	}
+	if newsID != req.NewsID {
+		h.logger.Warn("newsID is invalid")
+		validErr := coreHttp.NewValidationError("newsID", "newsID is invalid")
+		coreHttp.SendErrorJSON(h.logger, w, &validErr)
+		return
+	}
+
 	var taggedUserID *uuid.UUID
 	if req.TaggedUserID != "" {
 		uuidParse, err := uuid.Parse(req.TaggedUserID)
