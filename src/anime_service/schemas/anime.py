@@ -53,7 +53,7 @@ class AnimeDetailResponse(AnimeResponse):
 
 # Список с пагинацией
 class AnimeListResponse(BaseModel):
-    items: List[AnimeResponse]
+    items: List[AnimeDetailResponse]
     total: int
     page: int
     size: int
