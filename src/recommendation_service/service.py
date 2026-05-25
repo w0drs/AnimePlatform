@@ -1,17 +1,9 @@
-from recommender import LanceRecommender
-import uvicorn
-from schemas import RecommendationResponse, AnimeRecommendation, SimilarByIdResponse
+from src.recommendation_service.recommender import LanceRecommender
+from src.recommendation_service.schemas import RecommendationResponse, AnimeRecommendation, SimilarByIdResponse
 import time
 from fastapi import FastAPI, HTTPException, Query
 from contextlib import asynccontextmanager
 
-
-pg_params = {
-    'host': 'localhost',
-    'database': 'anime_db',
-    'user': 'postgres',
-    'password': '12345'
-}
 
 # Глобальные переменные
 recommender: LanceRecommender | None = None
@@ -24,7 +16,7 @@ async def lifespan(app: FastAPI):
 
     # Загрузка при старте
     print("Загрузка рекомендера...")
-    recommender = LanceRecommender(db_path="./lancedb")
+    recommender = LanceRecommender(db_path="src/recommendation_service/lancedb")
 
     try:
         recommender.table = recommender.db.open_table(recommender.table_name)
@@ -98,6 +90,3 @@ async def recommend_by_anime_id(
         recommendations=[AnimeRecommendation(**r) for r in results],
         processing_time_ms=round(processing_time, 2)
     )
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)

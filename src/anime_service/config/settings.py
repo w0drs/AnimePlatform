@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     api_port: int = 8001
     api_host: str = "0.0.0.0"
 
-    auth_host: str = "http://192.168.3.106"
+    auth_host: str = "http://localhost"
     auth_port: int = 8002
 
     database_url: Optional[str] = None
