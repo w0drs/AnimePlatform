@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}{{ anime.title_english if anime else 'Аниме' }} — Kuronami{% endblock %}
+
+{% block extra_head %}
+<meta name="referrer" content="strict-origin-when-cross-origin">
+{% endblock %}
+
+{% block content %}
+<div class="container anime-page">
+    {% if anime %}
+    <!-- Основной блок: постер + информация -->
+    <div class="anime-main">
+        <div class="anime-poster">
+            <img src="{{ anime.image_webp_large_url or 'https://placehold.co/400x560/f5f5f0/6a9ec9?text=' + (anime.title_english|urlencode if anime.title_english else 'No+Image') }}"
+                 alt="{{ anime.title_english or 'Anime poster' }}">
+        </div>
+        <div class="anime-info-main">
+            <h1 class="anime-title-main">{{ anime.title_english or 'Без названия' }}</h1>
+            <div class="anime-metadata">
+                <div class="meta-row">
+                    <span class="meta-label">Тип:</span>
+                    <span class="meta-value">{{ anime.type or 'TV Сериал' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Эпизоды:</span>
+                    <span class="meta-value">{{ anime.episodes or '?' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Длительность:</span>
+                    <span class="meta-value">{{ anime.duration or '?' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Рейтинг:</span>
+                    <span class="meta-value rating">★ {{ anime.rating or '?' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Год:</span>
+                    <span class="meta-value">{{ anime.year or '?' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Жанры:</span>
+                    <span class="meta-value">{{ genres|join(', ') if genres else '?' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Студия:</span>
+                    <span class="meta-value">{{ studios|join(', ') if studios else '?' }}</span>
+                </div>
+            </div>
+            <div class="anime-synopsis">
+                <h3>Сюжет</h3>
+                <p>{{ anime.synopsis or 'Описание временно недоступно.' }}</p>
+                {% if anime.background %}
+                <div class="anime-background">
+                    <h3>Предыстория</h3>
+                    <p>{{ anime.background }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок с трейлером (кнопка-ссылка на YouTube) -->
+    {% if anime.trailer_url %}
+    <div class="anime-trailer">
+        <h2 class="section-title">Трейлер</h2>
+        <div class="trailer-button-wrapper">
+            <a href="{{ anime.trailer_url }}" target="_blank" class="trailer-button">
+                <span class="play-icon">▶</span>
+                Смотреть трейлер на YouTube
+            </a>
+            <p class="trailer-hint">Откроется в новой вкладке</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Похожие аниме -->
+    <div class="similar-anime">
+        <h2 class="section-title">Похожие аниме</h2>
+        <div class="similar-grid">
+            {% for similar in similar_anime %}
+            <div class="similar-card" onclick="location.href='/anime/{{ similar.id }}'">
+                <img src="{{ similar.image_webp_large_url or 'https://placehold.co/200x280/f5f5f0/6a9ec9?text=' + (similar.title_english|urlencode if similar.title_english else 'No+Image') }}"
+                     alt="{{ similar.title_english or 'Similar anime' }}">
+                <div class="similar-info">
+                    <div class="similar-title">{{ similar.title_english or 'Без названия' }}</div>
+                    <div class="similar-year">{{ similar.year or '?' }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="similar-empty">Нет похожих аниме</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Комментарии -->
+    <div class="comments-section">
+        <h2 class="section-title">Комментарии</h2>
+
+        <!-- Форма добавления комментария -->
+        {% if is_authorized %}
+        <div class="comment-form">
+            <div class="comment-avatar">
+                <img src="{{ user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=U' }}" alt="User">
+            </div>
+            <div class="comment-input-area">
+                <textarea id="comment-text" placeholder="Написать комментарий..."></textarea>
+                <button class="btn-submit" onclick="submitComment()">Отправить</button>
+            </div>
+        </div>
+        {% else %}
+        <div class="comment-login-prompt">
+            <p><a href="/login">Войдите</a>, чтобы оставить комментарий</p>
+        </div>
+        {% endif %}
+
+        <!-- Список комментариев -->
+        <div class="comments-list" id="comments-list">
+            {% for comment in comments %}
+            <div class="comment-item" id="comment-{{ comment.id }}">
+                <div class="comment-avatar">
+                    <img src="{{ comment.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (comment.username|first|upper if comment.username else 'U') }}"
+                         alt="{{ comment.username or 'User' }}">
+                </div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="comment-author">{{ comment.username or 'Аноним' }}</span>
+                        <span class="comment-date">{{ comment.created_at or 'только что' }}</span>
+                    </div>
+                    <div class="comment-text">{{ comment.text or '' }}</div>
+                    <div class="comment-actions">
+                        <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ comment.username or '' }}')">Ответить</button>
+                    </div>
+
+                    {% for reply in comment.replies %}
+                    <div class="comment-item reply">
+                        <div class="comment-avatar">
+                            <img src="{{ reply.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (reply.username|first|upper if reply.username else 'U') }}"
+                                 alt="{{ reply.username or 'User' }}">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">{{ reply.username or 'Аноним' }}</span>
+                                <span class="comment-date">{{ reply.created_at or 'только что' }}</span>
+                            </div>
+                            <div class="comment-text">
+                                {% if reply.tagged_username %}
+                                <span class="comment-tag">@{{ reply.tagged_username }}</span>
+                                {% endif %}
+                                {{ reply.text or '' }}
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ reply.username or '' }}')">Ответить</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="comment-empty">Пока нет комментариев. Будьте первым!</div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация комментариев -->
+        {% if total_pages is defined and total_pages and total_pages > 1 %}
+        <div class="pagination comments-pagination">
+            {% for p in range(1, total_pages + 1) %}
+            <span class="page-link {% if p == current_page %}active{% endif %}"
+                  onclick="loadCommentsPage({{ p }})">{{ p }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="error-message">
+        <h2>Аниме не найдено</h2>
+        <p>К сожалению, запрашиваемое аниме не существует или было удалено.</p>
+        <a href="/catalog" class="btn btn-register">Вернуться в каталог</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function submitComment() {
+    const textarea = document.getElementById('comment-text');
+    const text = textarea.value.trim();
+    if (!text) return;
+
+    fetch('/api/comments/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            anime_id: {{ anime.id if anime else 0 }},
+            text: text,
+            parent_id: window.replyParentId || null
+        })
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Ошибка при отправке комментария');
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при отправке. Попробуйте позже.');
+    });
+}
+
+function replyToComment(parentId, username) {
+    const textarea = document.getElementById('comment-text');
+    if (!textarea) return;
+    if (username) {
+        textarea.value = '@' + username + ' ';
+    }
+    textarea.focus();
+    window.replyParentId = parentId;
+}
+
+function loadCommentsPage(page) {
+    location.href = window.location.pathname + '?page=' + page;
+}
+</script>
+{% endblock %}

@@ -1,13 +1,16 @@
-from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi import APIRouter, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from src.frontend.config.settings import settings
-from typing import Optional
 
+from src.frontend.config.settings import settings
+from src.frontend.services.auth_service import auth_service
+
+from typing import Optional
+from pathlib import Path
 import httpx
 
 router = APIRouter()
-templates = Jinja2Templates(directory="/templates")
+templates = Jinja2Templates(directory=f"{Path(__file__).resolve().parent.resolve().parent}/templates")
 AUTH_SERVICE_URL = settings.auth_service
 
 
@@ -19,11 +22,13 @@ async def login_page(
     """
     GET /login - Показывает HTML форму логина
     """
+    if request.cookies.get("access_token"):
+        return RedirectResponse(url="/main", status_code=302)
+
     return templates.TemplateResponse(
         "login.html",
         {"request": request, "error": error}
-    )
-
+)
 
 @router.post("/login")
 async def login(
@@ -31,77 +36,41 @@ async def login(
         email: str = Form(...),
         password: str = Form(...)
 ):
-    """
-    POST /login - Отправляет данные в auth сервис
-    """
-    # Получаем User-Agent
+    if request.cookies.get("access_token"):
+        return RedirectResponse(url="/main", status_code=302)
+
     user_agent = request.headers.get("user-agent", "")
+    real_ip = (
+            request.headers.get('X-Real-IP') or
+            request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or
+            (request.client.host if request.client else "unknown")
+    )
 
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await auth_service.login(email, password, real_ip, user_agent)
+        access_token = response.access_token
+        refresh_token = response.refresh_token
 
-            response = await client.post(
-                f"{AUTH_SERVICE_URL}/auth/login",
-                json={
-                    "email": email,
-                    "password": password,
-                    "user_agent": user_agent
-                },
-                headers={
-                    "Content-Type": "application/json",
-                    "User-Agent": user_agent
-                }
-            )
+        resp = RedirectResponse(url="/main", status_code=302)
 
-        # Если auth сервис вернул ошибку
-        if response.status_code != 200:
-            error_detail = response.json().get("detail", "Invalid credentials")
-            return RedirectResponse(
-                url=f"/login?error={error_detail}",
-                status_code=302
-            )
-
-        # Получаем токены
-        data = response.json()
-        access_token = data.get("access_token")
-
-        # Получаем refresh_token из cookies (если auth сервис установил)
-        refresh_token = None
-        for cookie in response.cookies:
-            if cookie.key == "refresh_token":
-                refresh_token = cookie.value
-                break
-
-        # Создаем HTML страницу с JavaScript для сохранения access_token
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Redirecting...</title>
-        </head>
-        <body>
-            <script>
-                // Сохраняем access_token в localStorage
-                localStorage.setItem('access_token', '{access_token}');
-                // Перенаправляем на главную
-                window.location.href = '/';
-            </script>
-        </body>
-        </html>
-        """
-
-        # Создаем ответ с установкой refresh_token cookie
-        resp = HTMLResponse(content=html_content)
+        resp.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=settings.env == "production",
+            samesite="lax",
+            max_age=15 * 60,  # 15 минут
+        )
 
         if refresh_token:
             resp.set_cookie(
-                key="refresh_token",
+                key="refresh",
                 value=refresh_token,
                 httponly=True,
-                secure=False,  # True в production (HTTPS)
+                secure=settings.env == "production",
                 samesite="lax",
                 max_age=7 * 24 * 60 * 60,  # 7 дней
-                path="/"
+                path="/refresh"
             )
 
         return resp
@@ -116,4 +85,91 @@ async def login(
         return RedirectResponse(
             url="/login?error=Something went wrong",
             status_code=302
-        )
+
+)
+
+@router.get("/register")
+async def register_get(request: Request, error: str = None):
+    return templates.TemplateResponse("register.html", {
+        "request": request,
+        "active_page": "register",
+        "is_authorized": False,
+        "is_admin": False,
+        "error": error,
+        "form": {},
+    })
+
+@router.post("/register")
+async def register_post(
+        request: Request,
+        login: str = Form(...),
+        email: str = Form(...),
+        password: str = Form(...),
+        confirm_password: str = Form(...),
+):
+    icon_url = settings.default_user_icon_name
+    first_name = "Anonim"
+    description = ""
+
+    if password != confirm_password:
+        return templates.TemplateResponse("register.html", {
+            "request": request,
+            "is_authorized": False,
+            "is_admin": False,
+            "error": "Пароли не совпадают",
+            "form": {"login": login, "email": email},
+        })
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{settings.auth_service}/auth/register",
+                json={"login": login, "email": email, "password": password, "icon_url": icon_url,
+                      "first_name": first_name, "description": description},
+            )
+        except httpx.RequestError:
+            return RedirectResponse(url="/register?error=Service unavailable", status_code=302)
+
+    if response.status_code == 409:
+        return templates.TemplateResponse("register.html", {
+            "request": request,
+            "is_authorized": False,
+            "is_admin": False,
+            "error": "Email или логин уже заняты",
+            "form": {"login": login, "email": email},
+        })
+    if response.status_code != 201:
+        return RedirectResponse(url="/register?error=Ошибка регистрации", status_code=302)
+
+    return RedirectResponse(url="/login", status_code=302)
+
+@router.get("/refresh")
+async def refresh_get(request: Request, next: str = "/main"):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{settings.auth_service}/auth/refresh",
+                cookies=request.cookies,
+            )
+        except httpx.RequestError:
+            return RedirectResponse(url="/login", status_code=302)
+    if response.status_code != 200:
+        return RedirectResponse(url="/login", status_code=302)
+    data = response.json()
+    new_access_token = data.get("access_token")
+
+    resp = RedirectResponse(url=next, status_code=303)
+
+    resp.set_cookie(
+        key="access_token",
+        value=new_access_token,
+        httponly=True,
+        secure=settings.env == "production",
+        samesite="lax",
+        max_age=15 * 60,
+    )
+
+    # Пробрасываем Set-Cookie от auth сервиса (новый refresh)
+    for header_value in response.headers.get_list("set-cookie"):
+        resp.raw_headers.append((b"set-cookie", header_value.encode()))
+    return resp

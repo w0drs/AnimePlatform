@@ -3,6 +3,8 @@ from src.anime_service.database.connection import db
 
 
 class AnimeRepository:
+    def __init__(self):
+        ...
 
     @staticmethod
     def get_all(limit: int = 100, offset: int = 0) -> List[Dict]:
