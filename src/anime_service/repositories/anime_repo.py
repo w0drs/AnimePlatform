@@ -3,8 +3,6 @@ from src.anime_service.database.connection import db
 
 
 class AnimeRepository:
-    def __init__(self):
-        ...
 
     @staticmethod
     def get_all(limit: int = 100, offset: int = 0) -> List[Dict]:
@@ -215,3 +213,65 @@ class AnimeRepository:
             """
             cur.execute(query, ids)
             return cur.fetchall()
+
+    @staticmethod
+    def get_all_with_relations(limit: int = 100, offset: int = 0) -> List[Dict]:
+        """Получить все аниме с жанрами, темами, студиями и демографикой"""
+        anime_list = AnimeRepository.get_all(limit, offset)
+
+        for anime in anime_list:
+            anime_id = anime['id']
+            anime['genres'] = AnimeRepository.get_genres_by_anime_id(anime_id)
+            anime['themes'] = AnimeRepository.get_themes_by_anime_id(anime_id)
+            anime['demographics'] = AnimeRepository.get_demographics_by_anime_id(anime_id)
+            anime['studios'] = AnimeRepository.get_studios_by_anime_id(anime_id)
+
+        return anime_list
+
+    @staticmethod
+    def get_genres_by_anime_id(anime_id: int) -> List[str]:
+        """Получить жанры аниме"""
+        with db.get_cursor() as cur:
+            cur.execute("""
+                SELECT g.name
+                FROM genres g
+                JOIN anime_genres ag ON g.id = ag.genre_id
+                WHERE ag.anime_id = %s
+            """, (anime_id,))
+            return [row['name'] for row in cur.fetchall()]
+
+    @staticmethod
+    def get_themes_by_anime_id(anime_id: int) -> List[str]:
+        """Получить темы аниме"""
+        with db.get_cursor() as cur:
+            cur.execute("""
+                SELECT t.name
+                FROM themes t
+                JOIN anime_themes at ON t.id = at.theme_id
+                WHERE at.anime_id = %s
+            """, (anime_id,))
+            return [row['name'] for row in cur.fetchall()]
+
+    @staticmethod
+    def get_demographics_by_anime_id(anime_id: int) -> List[str]:
+        """Получить демографику аниме"""
+        with db.get_cursor() as cur:
+            cur.execute("""
+                SELECT d.name
+                FROM demographics d
+                JOIN anime_demographics ad ON d.id = ad.demographic_id
+                WHERE ad.anime_id = %s
+            """, (anime_id,))
+            return [row['name'] for row in cur.fetchall()]
+
+    @staticmethod
+    def get_studios_by_anime_id(anime_id: int) -> List[str]:
+        """Получить студии аниме"""
+        with db.get_cursor() as cur:
+            cur.execute("""
+                SELECT s.name
+                FROM studios s
+                JOIN anime_studios as2 ON s.id = as2.studio_id
+                WHERE as2.anime_id = %s
+            """, (anime_id,))
+            return [row['name'] for row in cur.fetchall()]

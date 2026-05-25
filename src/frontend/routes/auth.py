@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+from src.frontend.services.jwt_service import jwt_service
 from src.frontend.config.settings import settings
 from src.frontend.services.auth_service import auth_service
 
@@ -22,13 +23,16 @@ async def login_page(
     """
     GET /login - Показывает HTML форму логина
     """
-    if request.cookies.get("access_token"):
-        return RedirectResponse(url="/main", status_code=302)
+    payload, needs_refresh = await jwt_service.verify(request)
 
-    return templates.TemplateResponse(
+    resp = templates.TemplateResponse(
         "login.html",
-        {"request": request, "error": error}
-)
+        {"request": request, "error": error})
+
+    if not payload and request.cookies.get('access_token'):
+        resp.set_cookie("access_token", "", max_age=0, httponly=True, samesite="lax", path="/")
+
+    return resp
 
 @router.post("/login")
 async def login(

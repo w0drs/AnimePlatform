@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     description VARCHAR(512) DEFAULT '',
     hashed_password VARCHAR(255) NOT NULL,
-    first_name VARCHAR(128) NOT NULL,
+    first_name VARCHAR(128) DEFAULT 'Anonim',
     icon_url VARCHAR(255) DEFAULT '',
     role VARCHAR(50) NOT NULL DEFAULT 'user',
     is_active BOOLEAN NOT NULL DEFAULT TRUE,

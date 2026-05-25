@@ -9,11 +9,12 @@ class Settings(BaseSettings):
     jwt_secret_key: str = os.getenv("JWT_SECRET", "jwt-secret")
 
     # Внутренняя система, к чему узер не сможет получить доступ
-    anime_service: str = os.getenv("ANIME_SERVICE_ENDPOINT", "http://192.168.3.160:8001")
-    news_service: str = os.getenv("NEWS_SERVICE_ENDPOINT", "http://192.168.3.160:8001")
+    anime_service: str = os.getenv("ANIME_SERVICE_ENDPOINT", "http://localhost:8001")
+    news_service: str = os.getenv("NEWS_SERVICE_ENDPOINT", "http://localhost:8001")
+    recommends_service: str = os.getenv("RECOMMENDS_SERVICE_ENDPOINT", "http://localhost:8003")
 
-    auth_service: str = os.getenv("AUTH_SERVICE_ENDPOINT", "http://192.168.3.106:8002")
-    user_service: str = os.getenv("USER_SERVICE_ENDPOINT", "http://192.168.3.106:8002")
+    auth_service: str = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost:8002")
+    user_service: str = os.getenv("USER_SERVICE_ENDPOINT", "http://localhost:8002")
     comments_service: str = os.getenv("COMMENTS_SERVICE_ENDPOINT", "http://localhost:8002")
 
     frontend_port: int = int(os.getenv("FRONTEND_PORT", 8000))
