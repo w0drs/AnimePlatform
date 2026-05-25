@@ -17,7 +17,7 @@ func (c *CommentsPG) GetAnimeComments(ctx context.Context, animeID int, page int
         FROM anime_comments
         WHERE anime_id = $1 
             AND is_deleted = false 
-        ORDER BY created_at
+        ORDER BY created_at DESC
         LIMIT $2 OFFSET $3
     `
 
@@ -59,7 +59,7 @@ func (c *CommentsPG) GetNewsComments(ctx context.Context, newsID int, page int) 
         FROM news_comments
         WHERE news_id = $1 
             AND is_deleted = false 
-        ORDER BY created_at
+        ORDER BY created_at DESC
         LIMIT $2 OFFSET $3
     `
 
