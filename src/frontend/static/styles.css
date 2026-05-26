@@ -2238,3 +2238,89 @@ button.profile-danger-link {
         gap: 0.3rem;
     }
 }
+
+/* ===================== ПАГИНАЦИЯ КОММЕНТАРИЕВ ===================== */
+
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: block; }
+.comments-loader {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.page-btn {
+    padding: 0.55rem 1.3rem;
+    border-radius: 40px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: var(--accent-darker);
+    color: var(--accent-darker);
+    background: var(--accent-soft);
+    box-shadow: var(--shadow-sm);
+}
+
+.page-btn--disabled,
+.page-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
+}
+
+.page-current {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--gradient);
+    border: 1px solid var(--accent-darker);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+
+/* ===================== КНОПКА ИЗБРАННОЕ ===================== */
+.favorite-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: var(--shadow);
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.favorite-btn:hover {
+    transform: scale(1.1);
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.favorite-btn--active {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15), var(--shadow);
+}

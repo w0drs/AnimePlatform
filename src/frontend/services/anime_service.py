@@ -62,45 +62,58 @@ class AnimeService:
                 return {}
         return response.json() if response.status_code == 200 else {}
 
-    async def get_anime_page_data(self, anime_id: str, page: int = 1, limit: int = 10) -> dict:
-        # Первая волна — параллельно
-        anime, recommendations_raw, comments_raw = await asyncio.gather(
-            self.get_anime(anime_id),
-            self.get_recommendations(anime_id, limit),
-            self.get_comments(anime_id, page),
-        )
+    async def check_favorite(self, anime_id: str, access_token: str) -> bool:
+        if not access_token:
+            return False
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    f"{settings.user_service}/user/favorites/me/{anime_id}",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+                return response.status_code == 200
+            except httpx.RequestError:
+                return False
 
-        # Достаём id из результатов
-        recommended_ids = [
-            r["id"] for r in recommendations_raw.get("recommendations", []) if "id" in r
-        ]
-        comment_user_ids = list({
-            c["UserID"] for c in comments_raw.get("comments", []) if c.get("UserID")
-        })
-
-        # Вторая волна — параллельно
-        recommended_animes, users_batch = await asyncio.gather(
-            self.get_animes_by_ids(recommended_ids),
-            self.get_users_batch(comment_user_ids),
-        )
-
-        # Мапа user_id -> user для шаблона
-        users_map = {
-            u["ID"]: u for u in users_batch.get("users", []) if "ID" in u
-        }
+    async def enrich_comments(self, comments_raw: dict) -> list:
         comments = comments_raw.get("comments", [])
-        comments_with_users = [
+        user_ids = list({c["UserID"] for c in comments if c.get("UserID")})
+        users_batch = await self.get_users_batch(user_ids)
+        users_map = {u["ID"]: u for u in users_batch.get("users", []) if "ID" in u}
+
+        return [
             {
                 "id": c.get("ID"),
-                "username": users_map.get(c.get("UserID"), {}).get("Login", c.get("ID")),
-                "user_avatar": users_map.get(c.get("UserID"), {}).get("IconUrl", settings.default_user_icon_name),
+                "username": users_map.get(c.get("UserID"), {}).get("Login", "Аноним"),
+                "user_avatar": users_map.get(c.get("UserID"), {}).get("IconUrl", ""),
                 "text": c.get("Text", ""),
                 "created_at": format_time_ago(c.get("CreatedAt", "")),
             }
             for c in comments
         ]
 
+
+    async def get_anime_page_data(self, anime_id: str, page: int = 1, limit: int = 10, access_token: str = None) -> dict:
+        # Первая волна — параллельно
+        anime, recommendations_raw, comments_raw, is_favorite = await asyncio.gather(
+            self.get_anime(anime_id),
+            self.get_recommendations(anime_id, limit),
+            self.get_comments(anime_id, page),
+            self.check_favorite(anime_id, access_token),
+        )
+
+        recommended_ids = [
+            r["id"] for r in recommendations_raw.get("recommendations", []) if "id" in r
+        ]
+
+        # Вторая волна — параллельно
+        recommended_animes, comments_with_users = await asyncio.gather(
+            self.get_animes_by_ids(recommended_ids),
+            self.enrich_comments(comments_raw),
+        )
+
         return {
+            "is_favorite": is_favorite,
             "anime": anime,
             "recommendations": recommended_animes,
             "comments": comments_with_users,

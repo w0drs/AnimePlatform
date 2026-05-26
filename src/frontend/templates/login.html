@@ -173,7 +173,7 @@
         <div class="login-error">{{ error }}</div>
         {% endif %}
 
-        <form method="post" action="{{ url_for('login') }}">
+        <form method="post" action="{{ url_for('login') }}?next={{ next }}">
             <div class="login-fields">
                 <div class="login-field">
                     <label for="email">Email</label>

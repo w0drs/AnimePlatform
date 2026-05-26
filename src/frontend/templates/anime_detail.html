@@ -11,12 +11,25 @@
     {% if anime %}
     <!-- Основной блок: постер + информация -->
     <div class="anime-main">
+            {% if is_authorized %}
+            <button id="favorite-btn"
+                class="favorite-btn {% if is_favorite %}favorite-btn--active{% endif %}"
+                onclick="toggleFavorite()"
+                data-anime-id="{{ anime.id }}"
+                data-favorited="{{ 'true' if is_favorite else 'false' }}">
+                ★
+            </button>
+            {% endif %}
+
         <div class="anime-poster">
             <img src="{{ anime.image_webp_large_url or 'https://placehold.co/400x560/f5f5f0/6a9ec9?text=' + (anime.title_english|urlencode if anime.title_english else 'No+Image') }}"
                  alt="{{ anime.title_english or 'Anime poster' }}">
         </div>
         <div class="anime-info-main">
             <h1 class="anime-title-main">{{ anime.title_english or 'Без названия' }}</h1>
+
+
+
             <div class="anime-metadata">
                 <div class="meta-row">
                     <span class="meta-label">Тип:</span>
@@ -97,12 +110,8 @@
     <div class="comments-section">
         <h2 class="section-title">Комментарии</h2>
 
-        <!-- Форма добавления комментария -->
         {% if is_authorized %}
         <div class="comment-form">
-            <div class="comment-avatar">
-                <img src="{{ user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=U' }}" alt="User">
-            </div>
             <div class="comment-input-area">
                 <textarea id="comment-text" placeholder="Написать комментарий..."></textarea>
                 <button class="btn-submit" onclick="submitComment()">Отправить</button>
@@ -114,63 +123,13 @@
         </div>
         {% endif %}
 
-        <!-- Список комментариев -->
-        <div class="comments-list" id="comments-list">
-            {% for comment in comments %}
-            <div class="comment-item" id="comment-{{ comment.id }}">
-                <div class="comment-avatar">
-                    <img src="{{ comment.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (comment.username|first|upper if comment.username else 'U') }}"
-                         alt="{{ comment.username or 'User' }}">
-                </div>
-                <div class="comment-content">
-                    <div class="comment-header">
-                        <span class="comment-author">{{ comment.username or 'Аноним' }}</span>
-                        <span class="comment-date">{{ comment.created_at or 'только что' }}</span>
-                    </div>
-                    <div class="comment-text">{{ comment.text or '' }}</div>
-                    <div class="comment-actions">
-                        <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ comment.username or '' }}')">Ответить</button>
-                    </div>
+        <!-- Лоадер -->
+        <div id="comments-loader" class="htmx-indicator comments-loader">Загрузка...</div>
 
-                    {% for reply in comment.replies %}
-                    <div class="comment-item reply">
-                        <div class="comment-avatar">
-                            <img src="{{ reply.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (reply.username|first|upper if reply.username else 'U') }}"
-                                 alt="{{ reply.username or 'User' }}">
-                        </div>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="comment-author">{{ reply.username or 'Аноним' }}</span>
-                                <span class="comment-date">{{ reply.created_at or 'только что' }}</span>
-                            </div>
-                            <div class="comment-text">
-                                {% if reply.tagged_username %}
-                                <span class="comment-tag">@{{ reply.tagged_username }}</span>
-                                {% endif %}
-                                {{ reply.text or '' }}
-                            </div>
-                            <div class="comment-actions">
-                                <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ reply.username or '' }}')">Ответить</button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% else %}
-            <div class="comment-empty">Пока нет комментариев. Будьте первым!</div>
-            {% endfor %}
+        <!-- Сюда htmx вставляет partial -->
+        <div id="comments-block">
+            {% include "anime_comments_partial.html" %}
         </div>
-
-        <!-- Пагинация комментариев -->
-        {% if total_pages is defined and total_pages and total_pages > 1 %}
-        <div class="pagination comments-pagination">
-            {% for p in range(1, total_pages + 1) %}
-            <span class="page-link {% if p == current_page %}active{% endif %}"
-                  onclick="loadCommentsPage({{ p }})">{{ p }}</span>
-            {% endfor %}
-        </div>
-        {% endif %}
     </div>
     {% else %}
     <div class="error-message">
@@ -219,6 +178,33 @@ function replyToComment(parentId, username) {
 
 function loadCommentsPage(page) {
     location.href = window.location.pathname + '?page=' + page;
+}
+
+let favoriteLocked = false;
+
+async function toggleFavorite() {
+    if (favoriteLocked) return;
+    favoriteLocked = true;
+
+    const btn = document.getElementById('favorite-btn');
+    const animeId = btn.dataset.animeId;
+    const isFavorited = btn.dataset.favorited === 'true';
+
+    const method = isFavorited ? 'DELETE' : 'POST';
+
+    try {
+        const response = await fetch(`/api/favorites/${animeId}`, { method });
+        const data = await response.json();
+
+        if (data.success) {
+            btn.dataset.favorited = isFavorited ? 'false' : 'true';
+            btn.classList.toggle('favorite-btn--active');
+        }
+    } catch (e) {
+        console.error('Ошибка:', e);
+    }
+
+    setTimeout(() => { favoriteLocked = false; }, 1000);
 }
 </script>
 {% endblock %}

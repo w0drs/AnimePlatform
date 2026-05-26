@@ -185,7 +185,3 @@ async def delete_account(request: Request):
     resp.set_cookie("access_token", "", max_age=0, httponly=True, samesite="lax", path="/")
     resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="strict", path="/auth/refresh")
     return resp
-
-@router.get("/landing", response_class=HTMLResponse)
-def profile():
-    return RedirectResponse(url="https://w0drs.github.io/AnimePlatform/", status_code=302)

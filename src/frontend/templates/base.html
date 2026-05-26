@@ -29,7 +29,7 @@
             </div>
             {% else %}
             <div class="auth-buttons">
-                <a href="{{ url_for('login') }}" class="btn btn-login">Вход</a>
+                <a href="{{ url_for('login') }}?next={{ request.url.path }}" class="btn btn-login">Вход</a>
             </div>
             {% endif %}
         </div>
@@ -43,5 +43,6 @@
         <p>© 2026 Kuronami — Аниме-энциклопедия с гибридной системой рекомендаций (коллаборативная + контентная фильтрация)</p>
         <p style="margin-top: 0.5rem; font-size: 0.8rem;">Избранное, комментарии, персональные подборки</p>
     </footer>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </body>
 </html>

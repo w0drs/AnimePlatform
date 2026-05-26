@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-
+from fastapi.responses import HTMLResponse
 from typing import Optional
 from pathlib import Path
 
 from src.frontend.services.jwt_service import jwt_service
-from src.frontend.services.auth_service import auth_service
 from src.frontend.schemas import users
 from src.frontend.services.anime_service import anime_service
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -60,9 +59,11 @@ async def anime_page(
         is_authorized = True
         is_admin = payload["role"] == users.RoleADMIN or payload["role"] == users.RoleMODER
     # получаем аниме
-    data = await anime_service.get_anime_page_data(anime_id, page=page)
+
+    data = await anime_service.get_anime_page_data(anime_id, page=page, access_token=request.cookies.get("access_token"))
     anime = data["anime"]
-    print(anime)
+    is_favorite = data["is_favorite"]
+
     # Данные аниме
     anime_data = {
         "id": anime_id,
@@ -89,12 +90,13 @@ async def anime_page(
     total_pages = 1
     current_page = 1
 
+    limit = 10
     return templates.TemplateResponse("anime_detail.html", {
         "request": request,
         "active_page": "anime",
         "is_authorized": is_authorized,
         "is_admin": is_admin,
-        "user_avatar": None,
+        "user_avatar": payload.get("icon_url", None),
 
         # Данные аниме
         "anime": anime_data,
@@ -108,34 +110,16 @@ async def anime_page(
         "comments": comments,
         "total_pages": total_pages,
         "current_page": current_page,
+
+        #Есть ли в избранном
+        "is_favorite": is_favorite,
+
+        # Для пагинации htmx
+        "anime_id": anime_id,
+        "page": 1,
+        "has_next": len(comments) == limit,
+        "has_prev": False,
     })
-
-# API роуты для комментариев (заглушки)
-@router.post("/api/comments/add", name="api_add_comment")
-async def api_add_comment(comment, request: Request):
-    """Заглушка для добавления комментария"""
-    # Здесь будет реальная логика сохранения комментария
-    return {
-        "success": True,
-        "message": "Комментарий добавлен (заглушка)",
-        "comment_id": 999
-    }
-
-
-@router.get("/api/comments", name="api_get_comments")
-async def api_get_comments(
-    request: Request,
-    anime_id: int,
-    page: int = 1
-):
-    """Заглушка для получения комментариев"""
-    return {
-        "success": True,
-        "comments": [],
-        "total_pages": 1,
-        "current_page": page
-    }
-
 
 @router.get("/catalog", response_class=HTMLResponse, name="catalog")
 async def catalog(

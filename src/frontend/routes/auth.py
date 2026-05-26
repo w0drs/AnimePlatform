@@ -18,6 +18,7 @@ AUTH_SERVICE_URL = settings.auth_service
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(
         request: Request,
+        next: str = "/main",
         error: Optional[str] = None
 ):
     """
@@ -25,9 +26,12 @@ async def login_page(
     """
     payload, needs_refresh = await jwt_service.verify(request)
 
-    resp = templates.TemplateResponse(
-        "login.html",
-        {"request": request, "error": error})
+    resp = templates.TemplateResponse("login.html",
+    {
+        "request": request,
+        "error": error,
+        "next": next,
+    })
 
     if not payload and request.cookies.get('access_token'):
         resp.set_cookie("access_token", "", max_age=0, httponly=True, samesite="lax", path="/")
@@ -37,11 +41,12 @@ async def login_page(
 @router.post("/login")
 async def login(
         request: Request,
+        next: str = "/main",
         email: str = Form(...),
         password: str = Form(...)
 ):
     if request.cookies.get("access_token"):
-        return RedirectResponse(url="/main", status_code=302)
+        return RedirectResponse(url=next, status_code=302)
 
     user_agent = request.headers.get("user-agent", "")
     real_ip = (
@@ -55,7 +60,7 @@ async def login(
         access_token = response.access_token
         refresh_token = response.refresh_token
 
-        resp = RedirectResponse(url="/main", status_code=302)
+        resp = RedirectResponse(url=next, status_code=302)
 
         resp.set_cookie(
             key="access_token",
@@ -81,13 +86,13 @@ async def login(
 
     except httpx.TimeoutException:
         return RedirectResponse(
-            url="/login?error=Service unavailable, please try again",
+            url=f"/login?next={next}&error=Service unavailable, please try again",
             status_code=302
         )
     except Exception as e:
         print(f"Login error: {e}")
         return RedirectResponse(
-            url="/login?error=Something went wrong",
+            url=f"/login?next={next}&error=Something went wrong",
             status_code=302
 
 )
