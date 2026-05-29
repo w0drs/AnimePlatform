@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from typing import Optional
 from pathlib import Path
+import httpx
+from typing import Optional
+from fastapi.responses import HTMLResponse
 
 from src.frontend.services.jwt_service import jwt_service
 from src.frontend.schemas import users
@@ -121,73 +122,112 @@ async def anime_page(
         "has_prev": False,
     })
 
+
 @router.get("/catalog", response_class=HTMLResponse, name="catalog")
 async def catalog(
         request: Request,
         year: Optional[str] = None,
-        genre: Optional[str] = None,
+        type: Optional[str] = None,
         rating: Optional[str] = None,
-        status: Optional[str] = None,
+        genre: Optional[str] = None,
+        theme: Optional[str] = None,
+        demographic: Optional[str] = None,
+        studio: Optional[str] = None,
         search: Optional[str] = None,
         page: int = 1,
+        size: int = 20,
         error: Optional[str] = None
 ):
     """Страница каталога аниме"""
     # Проверка авторизации
     payload, needs_refresh = await jwt_service.verify(request)
     is_authorized, is_admin = False, False
-    # Простая проверка токена
+
     if not needs_refresh:
         is_authorized = True
-        is_admin = payload["role"] == users.RoleADMIN or payload["role"] == users.RoleMODER
+        is_admin = payload.get("role") in ["admin", "moder"]
 
-    # Заглушка для фильтров
-    filters = {
-        "year": year,
-        "genre": genre,
-        "rating": rating,
-        "status": status,
-        "search": search
-    }
+    # Обработка пустых строк в параметрах
+    def clean_param(value):
+        if value == "" or value is None:
+            return None
+        return value
 
-    # Заглушка для списка аниме (замените на реальные данные из БД)
-    anime_list = [
-        {"id": 1, "title_english": "Атака Титанов", "rating": "9.2", "image_webp_large_url": ""},
-        {"id": 2, "title_english": "Магическая битва", "rating": "8.9", "image_webp_large_url": ""},
-        {"id": 3, "title_english": "One Piece", "rating": "9.1", "image_webp_large_url": ""},
-        {"id": 4, "title_english": "Тетрадь смерти", "rating": "9.0", "image_webp_large_url": ""},
-        {"id": 5, "title_english": "Человек-бензопила", "rating": "8.6", "image_webp_large_url": ""},
-        {"id": 6, "title_english": "Spy×Family", "rating": "8.8", "image_webp_large_url": ""},
-    ]
+    # Преобразуем год в int если он есть и не пустой
+    year_int = None
+    if year and year != "":
+        try:
+            year_int = int(year)
+        except ValueError:
+            year_int = None
 
-    # Заглушка для жанров (замените на реальные данные из БД)
-    all_genres = [
-        {"id": 1, "name": "Экшен"},
-        {"id": 2, "name": "Комедия"},
-        {"id": 3, "name": "Драма"},
-        {"id": 4, "name": "Романтика"},
-        {"id": 5, "name": "Фэнтези"},
-        {"id": 6, "name": "Научная фантастика"},
-        {"id": 7, "name": "Ужасы"},
-    ]
+    # Запрос к API аниме-сервиса
+    anime_list = []
+    total = 0
 
-    total_count = len(anime_list)
-    total_pages = 1
-    current_page = page
+    async with httpx.AsyncClient() as client:
+        try:
+            params = {
+                "page": page,
+                "size": size
+            }
+
+            if year_int:
+                params["year"] = year_int
+            if clean_param(type):
+                params["type"] = type
+            if clean_param(rating):
+                params["rating"] = rating
+            if clean_param(genre):
+                params["genre"] = genre
+            if clean_param(theme):
+                params["theme"] = theme
+            if clean_param(demographic):
+                params["demographic"] = demographic
+            if clean_param(studio):
+                params["studio"] = studio
+            if clean_param(search):
+                params["search"] = search
+
+            response = await client.get(
+                "http://localhost:8001/anime/filter",
+                params=params,
+                timeout=10.0
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                anime_list = data.get("items", [])
+                total = data.get("total", 0)
+            else:
+                error = f"API error: {response.status_code}"
+
+        except httpx.TimeoutException:
+            error = "Request timeout"
+        except httpx.ConnectError:
+            error = "Cannot connect to anime service"
+        except Exception as e:
+            error = f"Error: {str(e)}"
+
+    total_pages = (total + size - 1) // size if total > 0 else 0
 
     # Функция для обновления параметров запроса
     def update_query(**kwargs):
         params = {
             "year": year,
-            "genre": genre,
+            "type": type,
             "rating": rating,
-            "status": status,
+            "genre": genre,
+            "theme": theme,
+            "demographic": demographic,
+            "studio": studio,
             "search": search,
-            "page": page
+            "page": page,
+            "size": size
         }
         params.update(kwargs)
-        # Убираем пустые значения
-        params = {k: v for k, v in params.items() if v}
+        # Убираем None и пустые значения
+        params = {k: v for k, v in params.items() if v is not None and v != ""}
         return "&".join([f"{k}={v}" for k, v in params.items()])
 
     return templates.TemplateResponse("catalog.html", {
@@ -196,10 +236,17 @@ async def catalog(
         "is_authorized": is_authorized,
         "is_admin": is_admin,
         "anime_list": anime_list,
-        "all_genres": all_genres,
-        "filters": filters,
-        "total_count": total_count,
+        "total_count": total,
         "total_pages": total_pages,
-        "current_page": current_page,
+        "current_page": page,
+        "current_year": year,
+        "current_type": type,
+        "current_rating": rating,
+        "current_genre": genre,
+        "current_theme": theme,
+        "current_demographic": demographic,
+        "current_studio": studio,
+        "current_search": search,
         "update_query": update_query,
+        "error": error
     })

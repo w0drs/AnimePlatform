@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Каталог аниме — Kuronami{% endblock %}
+{% block title %}Anime Catalog — Kuronami{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -11,97 +11,198 @@
             <line x1="16" y1="21" x2="16" y2="15" stroke="#1a1a2e"/>
             <line x1="2" y1="9" x2="22" y2="9" stroke="#1a1a2e"/>
         </svg>
-        Каталог аниме
+        Anime Catalog
     </h1>
-    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Более {{ total_count }} тайтлов с подробной информацией, оценками и отзывами</p>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">More than {{ total_count }} titles with detailed information, ratings and reviews</p>
 
-    <!-- Фильтры -->
-    <form method="get" class="filters" id="filter-form">
+    <!-- Filters -->
+    <form method="get" class="filters" id="filter-form" action="/catalog">
         <div class="filter-group">
-            <label>📅 Год</label>
+            <label>📅 Year</label>
             <select name="year" onchange="this.form.submit()">
-                <option value="">Все годы</option>
-                {% for y in range(2024, 1990, -1) %}
-                <option value="{{ y }}" {% if filters.year == y|string %}selected{% endif %}>{{ y }}</option>
+                <option value="">All years</option>
+                {% for y in range(2025, 1990, -1) %}
+                <option value="{{ y }}" {% if current_year == y|string %}selected{% endif %}>{{ y }}</option>
                 {% endfor %}
+                <option value="1990" {% if current_year == '1990' %}selected{% endif %}>1990 and earlier</option>
             </select>
         </div>
+
         <div class="filter-group">
-            <label>🎭 Жанр</label>
-            <select name="genre" onchange="this.form.submit()">
-                <option value="">Все жанры</option>
-                {% for genre in all_genres %}
-                <option value="{{ genre.id }}" {% if filters.genre == genre.id|string %}selected{% endif %}>{{ genre.name }}</option>
-                {% endfor %}
+            <label>📺 Type</label>
+            <select name="type" onchange="this.form.submit()">
+                <option value="">All types</option>
+                <option value="TV" {% if current_type == 'TV' %}selected{% endif %}>TV</option>
+                <option value="Movie" {% if current_type == 'Movie' %}selected{% endif %}>Movie</option>
+                <option value="OVA" {% if current_type == 'OVA' %}selected{% endif %}>OVA</option>
+                <option value="ONA" {% if current_type == 'ONA' %}selected{% endif %}>ONA</option>
+                <option value="Special" {% if current_type == 'Special' %}selected{% endif %}>Special</option>
+                <option value="TV Special" {% if current_type == 'TV Special' %}selected{% endif %}>TV Special</option>
+                <option value="CM" {% if current_type == 'CM' %}selected{% endif %}>CM</option>
+                <option value="Music" {% if current_type == 'Music' %}selected{% endif %}>Music</option>
+                <option value="PV" {% if current_type == 'PV' %}selected{% endif %}>PV</option>
             </select>
         </div>
+
         <div class="filter-group">
-            <label>⭐ Рейтинг</label>
+            <label>🔞 Age Rating</label>
             <select name="rating" onchange="this.form.submit()">
-                <option value="">Любой</option>
-                <option value="9" {% if filters.rating == '9' %}selected{% endif %}>9+</option>
-                <option value="8" {% if filters.rating == '8' %}selected{% endif %}>8+</option>
-                <option value="7" {% if filters.rating == '7' %}selected{% endif %}>7+</option>
-                <option value="6" {% if filters.rating == '6' %}selected{% endif %}>6+</option>
+                <option value="">Any</option>
+                <option value="G - All Ages" {% if current_rating == 'G - All Ages' %}selected{% endif %}>G — All Ages</option>
+                <option value="PG - Children" {% if current_rating == 'PG - Children' %}selected{% endif %}>PG — Children</option>
+                <option value="PG-13 - Teens 13 or older" {% if current_rating == 'PG-13 - Teens 13 or older' %}selected{% endif %}>PG-13 — Teens 13+</option>
+                <option value="R - 17+ (violence & profanity)" {% if current_rating == 'R - 17+ (violence & profanity)' %}selected{% endif %}>R — 17+</option>
+                <option value="R+ - Mild Nudity" {% if current_rating == 'R+ - Mild Nudity' %}selected{% endif %}>R+ — 18+</option>
+                <option value="Rx - Hentai" {% if current_rating == 'Rx - Hentai' %}selected{% endif %}>Rx — Hentai</option>
             </select>
         </div>
+
         <div class="filter-group">
-            <label>📺 Статус</label>
-            <select name="status" onchange="this.form.submit()">
-                <option value="">Все</option>
-                <option value="finished" {% if filters.status == 'finished' %}selected{% endif %}>Вышел</option>
-                <option value="ongoing" {% if filters.status == 'ongoing' %}selected{% endif %}>Онгоинг</option>
-                <option value="upcoming" {% if filters.status == 'upcoming' %}selected{% endif %}>Анонсирован</option>
+            <label>🎭 Genre</label>
+            <select name="genre" onchange="this.form.submit()">
+                <option value="">All genres</option>
+                <option value="Action" {% if current_genre == 'Action' %}selected{% endif %}>Action</option>
+                <option value="Adventure" {% if current_genre == 'Adventure' %}selected{% endif %}>Adventure</option>
+                <option value="Avant Garde" {% if current_genre == 'Avant Garde' %}selected{% endif %}>Avant Garde</option>
+                <option value="Award Winning" {% if current_genre == 'Award Winning' %}selected{% endif %}>Award Winning</option>
+                <option value="Boys Love" {% if current_genre == 'Boys Love' %}selected{% endif %}>Boys Love</option>
+                <option value="Comedy" {% if current_genre == 'Comedy' %}selected{% endif %}>Comedy</option>
+                <option value="Drama" {% if current_genre == 'Drama' %}selected{% endif %}>Drama</option>
+                <option value="Ecchi" {% if current_genre == 'Ecchi' %}selected{% endif %}>Ecchi</option>
+                <option value="Erotica" {% if current_genre == 'Erotica' %}selected{% endif %}>Erotica</option>
+                <option value="Fantasy" {% if current_genre == 'Fantasy' %}selected{% endif %}>Fantasy</option>
+                <option value="Girls Love" {% if current_genre == 'Girls Love' %}selected{% endif %}>Girls Love</option>
+                <option value="Gourmet" {% if current_genre == 'Gourmet' %}selected{% endif %}>Gourmet</option>
+                <option value="Hentai" {% if current_genre == 'Hentai' %}selected{% endif %}>Hentai</option>
+                <option value="Horror" {% if current_genre == 'Horror' %}selected{% endif %}>Horror</option>
+                <option value="Mystery" {% if current_genre == 'Mystery' %}selected{% endif %}>Mystery</option>
+                <option value="Psychological" {% if current_genre == 'Psychological' %}selected{% endif %}>Psychological</option>
+                <option value="Romance" {% if current_genre == 'Romance' %}selected{% endif %}>Romance</option>
+                <option value="Sci-Fi" {% if current_genre == 'Sci-Fi' %}selected{% endif %}>Sci-Fi</option>
+                <option value="Slice of Life" {% if current_genre == 'Slice of Life' %}selected{% endif %}>Slice of Life</option>
+                <option value="Sports" {% if current_genre == 'Sports' %}selected{% endif %}>Sports</option>
+                <option value="Supernatural" {% if current_genre == 'Supernatural' %}selected{% endif %}>Supernatural</option>
+                <option value="Suspense" {% if current_genre == 'Suspense' %}selected{% endif %}>Suspense</option>
             </select>
         </div>
+
         <div class="filter-group">
-            <label>🔍 По названию</label>
-            <input type="text" name="search" value="{{ filters.search or '' }}" placeholder="Название аниме..." onkeypress="if(event.keyCode==13) this.form.submit()">
+            <label>🎯 Theme</label>
+            <select name="theme" onchange="this.form.submit()">
+                <option value="">All themes</option>
+                <option value="Adult Cast" {% if current_theme == 'Adult Cast' %}selected{% endif %}>Adult Cast</option>
+                <option value="Anthropomorphic" {% if current_theme == 'Anthropomorphic' %}selected{% endif %}>Anthropomorphic</option>
+                <option value="CGDCT" {% if current_theme == 'CGDCT' %}selected{% endif %}>CGDCT</option>
+                <option value="Childcare" {% if current_theme == 'Childcare' %}selected{% endif %}>Childcare</option>
+                <option value="Combat Sports" {% if current_theme == 'Combat Sports' %}selected{% endif %}>Combat Sports</option>
+                <option value="Crossdressing" {% if current_theme == 'Crossdressing' %}selected{% endif %}>Crossdressing</option>
+                <option value="Delinquents" {% if current_theme == 'Delinquents' %}selected{% endif %}>Delinquents</option>
+                <option value="Detective" {% if current_theme == 'Detective' %}selected{% endif %}>Detective</option>
+                <option value="Educational" {% if current_theme == 'Educational' %}selected{% endif %}>Educational</option>
+                <option value="Gag Humor" {% if current_theme == 'Gag Humor' %}selected{% endif %}>Gag Humor</option>
+                <option value="Gore" {% if current_theme == 'Gore' %}selected{% endif %}>Gore</option>
+                <option value="Harem" {% if current_theme == 'Harem' %}selected{% endif %}>Harem</option>
+                <option value="High Stakes Game" {% if current_theme == 'High Stakes Game' %}selected{% endif %}>High Stakes Game</option>
+                <option value="Historical" {% if current_theme == 'Historical' %}selected{% endif %}>Historical</option>
+                <option value="Idols (Female)" {% if current_theme == 'Idols (Female)' %}selected{% endif %}>Idols (Female)</option>
+                <option value="Idols (Male)" {% if current_theme == 'Idols (Male)' %}selected{% endif %}>Idols (Male)</option>
+                <option value="Isekai" {% if current_theme == 'Isekai' %}selected{% endif %}>Isekai</option>
+                <option value="Iyashikei" {% if current_theme == 'Iyashikei' %}selected{% endif %}>Iyashikei</option>
+                <option value="Love Polygon" {% if current_theme == 'Love Polygon' %}selected{% endif %}>Love Polygon</option>
+                <option value="Love Status Quo" {% if current_theme == 'Love Status Quo' %}selected{% endif %}>Love Status Quo</option>
+                <option value="Magical Sex Shift" {% if current_theme == 'Magical Sex Shift' %}selected{% endif %}>Magical Sex Shift</option>
+                <option value="Mahou Shoujo" {% if current_theme == 'Mahou Shoujo' %}selected{% endif %}>Mahou Shoujo</option>
+                <option value="Martial Arts" {% if current_theme == 'Martial Arts' %}selected{% endif %}>Martial Arts</option>
+                <option value="Mecha" {% if current_theme == 'Mecha' %}selected{% endif %}>Mecha</option>
+                <option value="Medical" {% if current_theme == 'Medical' %}selected{% endif %}>Medical</option>
+                <option value="Military" {% if current_theme == 'Military' %}selected{% endif %}>Military</option>
+                <option value="Music" {% if current_theme == 'Music' %}selected{% endif %}>Music</option>
+                <option value="Mythology" {% if current_theme == 'Mythology' %}selected{% endif %}>Mythology</option>
+                <option value="Organized Crime" {% if current_theme == 'Organized Crime' %}selected{% endif %}>Organized Crime</option>
+                <option value="Otaku Culture" {% if current_theme == 'Otaku Culture' %}selected{% endif %}>Otaku Culture</option>
+                <option value="Parody" {% if current_theme == 'Parody' %}selected{% endif %}>Parody</option>
+                <option value="Performing Arts" {% if current_theme == 'Performing Arts' %}selected{% endif %}>Performing Arts</option>
+                <option value="Pets" {% if current_theme == 'Pets' %}selected{% endif %}>Pets</option>
+                <option value="Psychological" {% if current_theme == 'Psychological' %}selected{% endif %}>Psychological</option>
+                <option value="Racing" {% if current_theme == 'Racing' %}selected{% endif %}>Racing</option>
+                <option value="Reincarnation" {% if current_theme == 'Reincarnation' %}selected{% endif %}>Reincarnation</option>
+                <option value="Reverse Harem" {% if current_theme == 'Reverse Harem' %}selected{% endif %}>Reverse Harem</option>
+                <option value="Samurai" {% if current_theme == 'Samurai' %}selected{% endif %}>Samurai</option>
+                <option value="School" {% if current_theme == 'School' %}selected{% endif %}>School</option>
+                <option value="Showbiz" {% if current_theme == 'Showbiz' %}selected{% endif %}>Showbiz</option>
+                <option value="Space" {% if current_theme == 'Space' %}selected{% endif %}>Space</option>
+                <option value="Strategy Game" {% if current_theme == 'Strategy Game' %}selected{% endif %}>Strategy Game</option>
+                <option value="Super Power" {% if current_theme == 'Super Power' %}selected{% endif %}>Super Power</option>
+                <option value="Survival" {% if current_theme == 'Survival' %}selected{% endif %}>Survival</option>
+                <option value="Team Sports" {% if current_theme == 'Team Sports' %}selected{% endif %}>Team Sports</option>
+                <option value="Time Travel" {% if current_theme == 'Time Travel' %}selected{% endif %}>Time Travel</option>
+                <option value="Urban Fantasy" {% if current_theme == 'Urban Fantasy' %}selected{% endif %}>Urban Fantasy</option>
+                <option value="Vampire" {% if current_theme == 'Vampire' %}selected{% endif %}>Vampire</option>
+                <option value="Video Game" {% if current_theme == 'Video Game' %}selected{% endif %}>Video Game</option>
+                <option value="Villainess" {% if current_theme == 'Villainess' %}selected{% endif %}>Villainess</option>
+                <option value="Visual Arts" {% if current_theme == 'Visual Arts' %}selected{% endif %}>Visual Arts</option>
+                <option value="Workplace" {% if current_theme == 'Workplace' %}selected{% endif %}>Workplace</option>
+            </select>
         </div>
+
         <div class="filter-group">
-            <button type="submit" class="btn-filter">Применить</button>
-            <a href="{{ url_for('catalog') }}" class="btn-filter-reset">Сбросить</a>
+            <label>👥 Demographic</label>
+            <select name="demographic" onchange="this.form.submit()">
+                <option value="">Any</option>
+                <option value="Josei" {% if current_demographic == 'Josei' %}selected{% endif %}>Josei</option>
+                <option value="Kids" {% if current_demographic == 'Kids' %}selected{% endif %}>Kids</option>
+                <option value="Seinen" {% if current_demographic == 'Seinen' %}selected{% endif %}>Seinen</option>
+                <option value="Shounen" {% if current_demographic == 'Shounen' %}selected{% endif %}>Shounen</option>
+                <option value="Shoujo" {% if current_demographic == 'Shoujo' %}selected{% endif %}>Shoujo</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>🔍 Title</label>
+            <input type="text" name="search" value="{{ current_search or '' }}" placeholder="Search anime..." onkeypress="if(event.keyCode==13) this.form.submit()">
+        </div>
+
+        <div class="filter-group">
+            <button type="submit" class="btn-filter">Apply</button>
+            <a href="/catalog" class="btn-filter-reset">Reset</a>
         </div>
     </form>
 
-    <!-- Сетка аниме -->
-    <div class="anime-grid">
+    <!-- Anime grid -->
+    <div class="catalog-grid">
         {% for anime in anime_list %}
-        <div class="anime-card" onclick="location.href='/anime/{{ anime.id }}'">
-            <div class="anime-image-container">
-                <img src="{{ anime.image_webp_large_url or 'https://placehold.co/300x420/f5f5f0/6a9ec9?text=' + (anime.title_english|urlencode if anime.title_english else 'No+Image') }}"
-                     alt="{{ anime.title_english or 'Anime' }}"
-                     class="anime-image"
-                     onerror="this.src='https://placehold.co/300x420/f5f5f0/6a9ec9?text={{ anime.title_english|default('No+Image')|urlencode }}'">
-                <div class="anime-overlay">
-                    <div class="anime-overlay-title">{{ anime.title_english or 'Без названия' }}</div>
-                    <div class="anime-overlay-rating">★ {{ anime.rating or '?' }}</div>
-                </div>
+        <div class="catalog-card" onclick="location.href='/anime/{{ anime.id }}'">
+            <img src="{{ anime.image_webp_large_url or 'https://placehold.co/600x1067/f5f5f0/6a9ec9?text=' + (anime.title_english|urlencode if anime.title_english else 'No+Image') }}"
+                 alt="{{ anime.title_english or 'Anime' }}"
+                 class="catalog-image"
+                 onerror="this.src='https://placehold.co/600x1067/f5f5f0/6a9ec9?text={{ anime.title_english|default('No+Image')|urlencode }}'">
+            <div class="catalog-info">
+                <div class="catalog-title">{{ anime.title_english or 'Untitled' }}</div>
             </div>
         </div>
         {% else %}
         <div class="empty-catalog">
-            <p>😕 Ничего не найдено. Попробуйте изменить параметры поиска.</p>
+            <p>😕 Nothing found. Try changing your search filters.</p>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Пагинация -->
+    <!-- Pagination -->
     {% if total_pages > 1 %}
     <div class="pagination">
         {% if current_page > 1 %}
-        <a href="?{{ update_query(page=current_page-1) }}" class="page-link">←</a>
+        <a href="/catalog?page={{ current_page-1 }}{% for key, value in request.query_params.items() if key != 'page' and value %}&{{ key }}={{ value }}{% endfor %}" class="page-link">←</a>
         {% endif %}
-        
+
         {% set start_page = [1, current_page-2]|max %}
         {% set end_page = [total_pages, current_page+2]|min %}
-        
+
         {% for p in range(start_page, end_page + 1) %}
-        <a href="?{{ update_query(page=p) }}" class="page-link {% if p == current_page %}active{% endif %}">{{ p }}</a>
+        <a href="/catalog?page={{ p }}{% for key, value in request.query_params.items() if key != 'page' and value %}&{{ key }}={{ value }}{% endfor %}" class="page-link {% if p == current_page %}active{% endif %}">{{ p }}</a>
         {% endfor %}
-        
+
         {% if current_page < total_pages %}
-        <a href="?{{ update_query(page=current_page+1) }}" class="page-link">→</a>
+        <a href="/catalog?page={{ current_page+1 }}{% for key, value in request.query_params.items() if key != 'page' and value %}&{{ key }}={{ value }}{% endfor %}" class="page-link">→</a>
         {% endif %}
     </div>
     {% endif %}

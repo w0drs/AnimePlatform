@@ -1,3 +1,4 @@
+import json
 from typing import Optional, List, Dict
 from src.anime_service.database.connection import db
 
@@ -21,40 +22,127 @@ class AnimeRepository:
         """Получить аниме с жанрами, темами и студиями"""
         with db.get_cursor() as cur:
             cur.execute("""
-                SELECT id, title_english, image_webp_large_url, trailer_url, type, episodes, duration, 
-                       rating, synopsis, background, year
-                FROM anime
-                WHERE id = %s
+                SELECT 
+                    a.id, 
+                    a.title_english, 
+                    a.image_webp_large_url, 
+                    a.trailer_url, 
+                    a.type, 
+                    a.episodes, 
+                    a.duration, 
+                    a.rating, 
+                    a.synopsis, 
+                    a.background, 
+                    a.year,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT g.name ORDER BY g.name)
+                         FROM anime_genres ag 
+                         JOIN genres g ON ag.genre_id = g.id 
+                         WHERE ag.anime_id = a.id), '[]'
+                    ) as genres,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT t.name ORDER BY t.name)
+                         FROM anime_themes at 
+                         JOIN themes t ON at.theme_id = t.id 
+                         WHERE at.anime_id = a.id), '[]'
+                    ) as themes,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT d.name ORDER BY d.name)
+                         FROM anime_demographics ad 
+                         JOIN demographics d ON ad.demographic_id = d.id 
+                         WHERE ad.anime_id = a.id), '[]'
+                    ) as demographics,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT s.name ORDER BY s.name)
+                         FROM anime_studios a_st 
+                         JOIN studios s ON a_st.studio_id = s.id 
+                         WHERE a_st.anime_id = a.id), '[]'
+                    ) as studios
+                FROM anime a
+                WHERE a.id = %s
             """, (anime_id,))
-            anime = cur.fetchone()
 
-            if not anime:
-                return None
+            result = cur.fetchone()
 
-            anime['genres'] = AnimeRepository.get_genres_by_anime_id(anime_id)
-            anime['themes'] = AnimeRepository.get_themes_by_anime_id(anime_id)
-            anime['demographics'] = AnimeRepository.get_demographics_by_anime_id(anime_id)
-            anime['studios'] = AnimeRepository.get_studios_by_anime_id(anime_id)
+            if result:
+                # Преобразуем JSON строки в списки Python
+                if result.get('genres') and isinstance(result['genres'], str):
+                    result['genres'] = json.loads(result['genres']) if result['genres'] != '[]' else []
+                else:
+                    result['genres'] = []
 
-            return anime
+                if result.get('themes') and isinstance(result['themes'], str):
+                    result['themes'] = json.loads(result['themes']) if result['themes'] != '[]' else []
+                else:
+                    result['themes'] = []
+
+                if result.get('demographics') and isinstance(result['demographics'], str):
+                    result['demographics'] = json.loads(result['demographics']) if result[
+                                                                                       'demographics'] != '[]' else []
+                else:
+                    result['demographics'] = []
+
+                if result.get('studios') and isinstance(result['studios'], str):
+                    result['studios'] = json.loads(result['studios']) if result['studios'] != '[]' else []
+                else:
+                    result['studios'] = []
+
+            return result
 
     @staticmethod
     def get_by_ids(ids: List[int]) -> List[Dict]:
-        """Получить аниме по списку ID"""
+        """Получить аниме по списку ID (оптимизированная версия)"""
         if not ids:
             return []
 
         placeholders = ','.join(['%s'] * len(ids))
         with db.get_cursor() as cur:
-            query = f"""
-                SELECT id, title_english, image_webp_large_url, type, episodes, duration, 
-                       rating, synopsis, year
-                FROM anime 
-                WHERE id IN ({placeholders})
-                ORDER BY id
-            """
-            cur.execute(query, ids)
-            return cur.fetchall()
+            cur.execute(f"""
+                SELECT 
+                    a.id, a.title_english, a.image_webp_large_url, a.type, 
+                    a.episodes, a.duration, a.rating, a.synopsis, a.year,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT g.name ORDER BY g.name)
+                         FROM anime_genres ag 
+                         JOIN genres g ON ag.genre_id = g.id 
+                         WHERE ag.anime_id = a.id), '[]'
+                    ) as genres,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT t.name ORDER BY t.name)
+                         FROM anime_themes at 
+                         JOIN themes t ON at.theme_id = t.id 
+                         WHERE at.anime_id = a.id), '[]'
+                    ) as themes,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT d.name ORDER BY d.name)
+                         FROM anime_demographics ad 
+                         JOIN demographics d ON ad.demographic_id = d.id 
+                         WHERE ad.anime_id = a.id), '[]'
+                    ) as demographics,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT s.name ORDER BY s.name)
+                         FROM anime_studios a_st 
+                         JOIN studios s ON a_st.studio_id = s.id 
+                         WHERE a_st.anime_id = a.id), '[]'
+                    ) as studios
+                FROM anime a
+                WHERE a.id IN ({placeholders})
+                ORDER BY a.id
+            """, ids)
+
+            results = cur.fetchall()
+
+            for row in results:
+                if row.get('genres') and isinstance(row['genres'], str):
+                    row['genres'] = json.loads(row['genres']) if row['genres'] != '[]' else []
+                if row.get('themes') and isinstance(row['themes'], str):
+                    row['themes'] = json.loads(row['themes']) if row['themes'] != '[]' else []
+                if row.get('demographics') and isinstance(row['demographics'], str):
+                    row['demographics'] = json.loads(row['demographics']) if row['demographics'] != '[]' else []
+                if row.get('studios') and isinstance(row['studios'], str):
+                    row['studios'] = json.loads(row['studios']) if row['studios'] != '[]' else []
+
+            return results
 
     @staticmethod
     def create(data: Dict) -> int:
@@ -123,7 +211,7 @@ class AnimeRepository:
             return cur.fetchall()
 
     @staticmethod
-    def filter(
+    def filter_anime(
             limit: int = 20,
             offset: int = 0,
             year: Optional[int] = None,
@@ -138,13 +226,10 @@ class AnimeRepository:
             search: Optional[str] = None
     ) -> tuple[List[Dict], int]:
         """
-        Фильтрация аниме с пагинацией
-
-        Returns:
-            tuple: (список аниме с жанрами/темами, общее количество)
+        Фильтрация аниме с пагинацией (оптимизированная версия, 1 запрос)
         """
         with db.get_cursor() as cur:
-            # Базовый запрос для фильтрации
+            # ============= 1. Базовый запрос для фильтрации ID =============
             filter_query = """
                 SELECT DISTINCT a.id
                 FROM anime a
@@ -160,6 +245,7 @@ class AnimeRepository:
             """
             params = []
 
+            # Год
             if year:
                 filter_query += " AND a.year = %s"
                 params.append(year)
@@ -170,35 +256,42 @@ class AnimeRepository:
                 filter_query += " AND a.year <= %s"
                 params.append(year_to)
 
+            # Тип
             if anime_type:
                 filter_query += " AND a.type = %s"
                 params.append(anime_type)
 
+            # Рейтинг
             if rating:
                 filter_query += " AND a.rating = %s"
                 params.append(rating)
 
+            # Жанр
             if genre:
                 filter_query += " AND g.name = %s"
                 params.append(genre)
 
+            # Тема
             if theme:
                 filter_query += " AND t.name = %s"
                 params.append(theme)
 
+            # Демографика
             if demographic:
                 filter_query += " AND d.name = %s"
                 params.append(demographic)
 
+            # Студия
             if studio:
                 filter_query += " AND s.name = %s"
                 params.append(studio)
 
+            # Поиск по названию
             if search:
                 filter_query += " AND a.title_english ILIKE %s"
                 params.append(f"%{search}%")
 
-            # Считаем общее количество
+            # ============= 2. Подсчет общего количества =============
             count_query = f"SELECT COUNT(*) as total FROM ({filter_query}) as filtered"
             cur.execute(count_query, params)
             total = cur.fetchone()['total']
@@ -206,29 +299,79 @@ class AnimeRepository:
             if total == 0:
                 return [], 0
 
-            # Получаем аниме с пагинацией
+            # ============= 3. Получаем ID с пагинацией =============
             filter_query += " ORDER BY a.id LIMIT %s OFFSET %s"
             params.extend([limit, offset])
 
             cur.execute(f"""
-                SELECT a.id, a.title_english, a.image_webp_large_url, a.type, 
-                       a.episodes, a.duration, a.rating, a.synopsis, a.year
+                SELECT a.id
                 FROM anime a
                 WHERE a.id IN ({filter_query})
                 ORDER BY a.id
             """, params)
 
-            anime_list = cur.fetchall()
+            anime_ids = [row['id'] for row in cur.fetchall()]
 
-            # Добавляем жанры, темы, студии для каждого аниме
-            for anime in anime_list:
-                anime_id = anime['id']
-                anime['genres'] = AnimeRepository.get_genres_by_anime_id(anime_id)
-                anime['themes'] = AnimeRepository.get_themes_by_anime_id(anime_id)
-                anime['demographics'] = AnimeRepository.get_demographics_by_anime_id(anime_id)
-                anime['studios'] = AnimeRepository.get_studios_by_anime_id(anime_id)
+            if not anime_ids:
+                return [], 0
 
-            return anime_list, total
+            # ============= 4. ОДНИМ ЗАПРОСОМ получаем все данные =============
+            placeholders = ','.join(['%s'] * len(anime_ids))
+
+            cur.execute(f"""
+                SELECT 
+                    a.id, 
+                    a.title_english, 
+                    a.image_webp_large_url, 
+                    a.type, 
+                    a.episodes, 
+                    a.duration, 
+                    a.rating, 
+                    a.synopsis, 
+                    a.year,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT g.name ORDER BY g.name)
+                         FROM anime_genres ag 
+                         JOIN genres g ON ag.genre_id = g.id 
+                         WHERE ag.anime_id = a.id), '[]'
+                    ) as genres,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT t.name ORDER BY t.name)
+                         FROM anime_themes at 
+                         JOIN themes t ON at.theme_id = t.id 
+                         WHERE at.anime_id = a.id), '[]'
+                    ) as themes,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT d.name ORDER BY d.name)
+                         FROM anime_demographics ad 
+                         JOIN demographics d ON ad.demographic_id = d.id 
+                         WHERE ad.anime_id = a.id), '[]'
+                    ) as demographics,
+                    COALESCE(
+                        (SELECT json_agg(DISTINCT s.name ORDER BY s.name)
+                         FROM anime_studios a_st 
+                         JOIN studios s ON a_st.studio_id = s.id 
+                         WHERE a_st.anime_id = a.id), '[]'
+                    ) as studios
+                FROM anime a
+                WHERE a.id IN ({placeholders})
+                ORDER BY a.id
+            """, anime_ids)
+
+            results = cur.fetchall()
+
+            # Преобразуем JSON строки в списки Python
+            for row in results:
+                if row.get('genres') and isinstance(row['genres'], str):
+                    row['genres'] = json.loads(row['genres']) if row['genres'] != '[]' else []
+                if row.get('themes') and isinstance(row['themes'], str):
+                    row['themes'] = json.loads(row['themes']) if row['themes'] != '[]' else []
+                if row.get('demographics') and isinstance(row['demographics'], str):
+                    row['demographics'] = json.loads(row['demographics']) if row['demographics'] != '[]' else []
+                if row.get('studios') and isinstance(row['studios'], str):
+                    row['studios'] = json.loads(row['studios']) if row['studios'] != '[]' else []
+
+            return results, total
 
     @staticmethod
     def get_genres_by_anime_id(anime_id: int) -> List[str]:

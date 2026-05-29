@@ -12,32 +12,30 @@ router = APIRouter(prefix="/anime", tags=["anime"])
 
 @router.get("/filter", response_model=AnimeListResponse)
 async def filter_anime(
-    page: int = Query(1, ge=1, description="Номер страницы"),
-    size: int = Query(20, ge=1, le=100, description="Количество на странице"),
-    year: Optional[int] = Query(None, description="Точный год"),
-    year_from: Optional[int] = Query(None, description="Год от"),
-    year_to: Optional[int] = Query(None, description="Год до"),
-    anime_type: Optional[str] = Query(None, alias="type", description="Тип аниме (TV, Movie, OVA...)"),
-    rating: Optional[str] = Query(None, description="Рейтинг"),
-    genre: Optional[str] = Query(None, description="Жанр"),
-    theme: Optional[str] = Query(None, description="Тема"),
-    demographic: Optional[str] = Query(None, description="Демографика"),
-    studio: Optional[str] = Query(None, description="Студия"),
-    search: Optional[str] = Query(None, description="Поиск по названию")
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    year: Optional[int] = Query(None),
+    year_from: Optional[int] = Query(None),
+    year_to: Optional[int] = Query(None),
+    type: Optional[str] = Query(None, alias="anime_type"),
+    rating: Optional[str] = Query(None),
+    genre: Optional[str] = Query(None),
+    theme: Optional[str] = Query(None),
+    demographic: Optional[str] = Query(None),
+    studio: Optional[str] = Query(None),
+    search: Optional[str] = Query(None)
 ):
-    """
-    Фильтрация аниме с пагинацией.
-    Все параметры опциональны.
-    """
+    """Фильтрация аниме с пагинацией"""
     offset = (page - 1) * size
 
-    items, total = AnimeRepository.filter(
+    # Исправлено: filter_anime вместо filter
+    items, total = AnimeRepository.filter_anime(
         limit=size,
         offset=offset,
         year=year,
         year_from=year_from,
         year_to=year_to,
-        anime_type=anime_type,
+        anime_type=type,
         rating=rating,
         genre=genre,
         theme=theme,
@@ -88,7 +86,7 @@ async def get_anime_by_ids(
 
 @router.get("/{anime_id}", response_model=AnimeDetailResponse)
 async def get_anime(anime_id: int):
-    """Получить аниме по ID с жанрами и темами"""
+    """Получить аниме по ID"""
     anime = AnimeRepository.get_details(anime_id)
     if not anime:
         raise HTTPException(status_code=404, detail="Anime not found")
