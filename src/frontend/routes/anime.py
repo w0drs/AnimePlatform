@@ -4,6 +4,7 @@ from pathlib import Path
 import httpx
 from typing import Optional
 from fastapi.responses import HTMLResponse
+import urllib.parse
 
 from src.frontend.services.jwt_service import jwt_service
 from src.frontend.schemas import users
@@ -139,6 +140,7 @@ async def catalog(
         error: Optional[str] = None
 ):
     """Страница каталога аниме"""
+
     # Проверка авторизации
     payload, needs_refresh = await jwt_service.verify(request)
     is_authorized, is_admin = False, False
@@ -209,26 +211,46 @@ async def catalog(
         except Exception as e:
             error = f"Error: {str(e)}"
 
-    total_pages = (total + size - 1) // size if total > 0 else 0
+    # Корректный расчет количества страниц
+    if total <= 0:
+        total_pages = 0
+    elif total <= size:
+        total_pages = 1
+    else:
+        total_pages = (total + size - 1) // size
 
-    # Функция для обновления параметров запроса
-    def update_query(**kwargs):
-        params = {
-            "year": year,
-            "type": type,
-            "rating": rating,
-            "genre": genre,
-            "theme": theme,
-            "demographic": demographic,
-            "studio": studio,
-            "search": search,
-            "page": page,
-            "size": size
-        }
-        params.update(kwargs)
-        # Убираем None и пустые значения
-        params = {k: v for k, v in params.items() if v is not None and v != ""}
-        return "&".join([f"{k}={v}" for k, v in params.items()])
+    # Функция для построения URL с правильным кодированием
+    def build_pagination_url(page_num: int) -> str:
+        """Строит URL для пагинации с сохранением всех фильтров"""
+        url_params = {}
+
+        if year:
+            url_params["year"] = year
+        if type:
+            url_params["type"] = type
+        if rating:
+            url_params["rating"] = rating
+        if genre:
+            url_params["genre"] = genre
+        if theme:
+            url_params["theme"] = theme
+        if demographic:
+            url_params["demographic"] = demographic
+        if studio:
+            url_params["studio"] = studio
+        if search:
+            url_params["search"] = search
+
+        url_params["page"] = page_num
+        url_params["size"] = size
+
+        # Правильное кодирование параметров
+        encoded_params = []
+        for key, value in url_params.items():
+            encoded_value = urllib.parse.quote(str(value), safe='')
+            encoded_params.append(f"{key}={encoded_value}")
+
+        return f"/catalog?{'&'.join(encoded_params)}"
 
     return templates.TemplateResponse("catalog.html", {
         "request": request,
@@ -239,6 +261,7 @@ async def catalog(
         "total_count": total,
         "total_pages": total_pages,
         "current_page": page,
+        "size": size,
         "current_year": year,
         "current_type": type,
         "current_rating": rating,
@@ -247,6 +270,6 @@ async def catalog(
         "current_demographic": demographic,
         "current_studio": studio,
         "current_search": search,
-        "update_query": update_query,
+        "build_pagination_url": build_pagination_url,
         "error": error
     })

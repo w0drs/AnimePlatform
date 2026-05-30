@@ -17,7 +17,7 @@ async def filter_anime(
     year: Optional[int] = Query(None),
     year_from: Optional[int] = Query(None),
     year_to: Optional[int] = Query(None),
-    type: Optional[str] = Query(None, alias="anime_type"),
+    anime_type: Optional[str] = Query(None, alias="type"),
     rating: Optional[str] = Query(None),
     genre: Optional[str] = Query(None),
     theme: Optional[str] = Query(None),
@@ -28,14 +28,13 @@ async def filter_anime(
     """Фильтрация аниме с пагинацией"""
     offset = (page - 1) * size
 
-    # Исправлено: filter_anime вместо filter
     items, total = AnimeRepository.filter_anime(
         limit=size,
         offset=offset,
         year=year,
         year_from=year_from,
         year_to=year_to,
-        anime_type=type,
+        anime_type=anime_type,
         rating=rating,
         genre=genre,
         theme=theme,
