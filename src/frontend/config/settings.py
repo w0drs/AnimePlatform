@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     frontend_port: int = int(os.getenv("FRONTEND_PORT", 8000))
     frontend_host: str = os.getenv("FRONTEND_ADDR", "0.0.0.0")
 
+    s3_endpoint: str = os.getenv("S3_ENDPOINT", "https://storage.yandexcloud.net")
+    s3_region: str = os.getenv("S3_REGION", "ru-central1")
     s3_access_key: str = os.getenv("S3_ACCESS_KEY", "")
     s3_secret_key: str = os.getenv("S3_SECRET_KEY", "")
     images_bucket: str = os.getenv("IMAGES_BUCKET", "kuronami-images")
