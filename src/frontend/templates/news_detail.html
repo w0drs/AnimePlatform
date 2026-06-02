@@ -1,176 +1,143 @@
 {% extends "base.html" %}
 
-{% block title %}{{ news.title if news else 'Новость' }} — Kuronami{% endblock %}
+{% block title %}{{ news.title }} — Kuronami{% endblock %}
+
+{% block extra_head %}
+<style>
+    .news-detail-hero {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        object-position: center;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+    }
+
+    .news-detail-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .news-detail-header {
+        margin-bottom: 2rem;
+    }
+
+    .news-detail-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .news-detail-meta {
+        display: flex;
+        gap: 1.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        border-bottom: 1px solid #e0e0d8;
+        padding-bottom: 1rem;
+    }
+
+    .news-detail-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .news-detail-content {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #2a2a3e;
+    }
+
+    .news-detail-content p {
+        margin-bottom: 1.5rem;
+    }
+
+    .news-detail-content h2,
+    .news-detail-content h3 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: #1a1a2e;
+    }
+
+    .news-detail-content ul,
+    .news-detail-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .news-detail-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .news-detail-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-bottom: 1.5rem;
+        transition: color 0.2s;
+    }
+
+    .news-detail-back:hover {
+        color: #1a1a2e;
+    }
+
+    @media (max-width: 768px) {
+        .news-detail-hero {
+            height: 250px;
+        }
+
+        .news-detail-title {
+            font-size: 1.8rem;
+        }
+
+        .news-detail-container {
+            padding: 0 1rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container news-detail-page">
-    {% if news %}
-    <!-- Основная новость -->
-    <div class="news-detail">
-        <div class="news-detail-header">
-            <h1 class="news-detail-title">{{ news.title }}</h1>
-            <div class="news-detail-meta">
-                <span class="news-detail-date">{{ news.created_at or news.date }}</span>
-                {% if news.author %}
-                <span class="news-detail-author">Автор: {{ news.author }}</span>
-                {% endif %}
-            </div>
-        </div>
-        
-        {% if news.image_url %}
-        <div class="news-detail-image">
-            <img src="{{ news.image_url }}" alt="{{ news.title }}" onerror="this.src='https://placehold.co/800x400/f5f5f0/6a9ec9?text={{ news.title|urlencode }}'">
-        </div>
-        {% endif %}
-        
-        <div class="news-detail-content">
-            {{ news.content|safe }}
-        </div>
-        
-        {% if news.tags %}
-        <div class="news-detail-tags">
-            <span class="tags-label">Теги:</span>
-            {% for tag in news.tags %}
-            <a href="/news?tag={{ tag }}" class="news-tag">{{ tag }}</a>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
+<div class="news-detail-container">
+    <a href="/news" class="news-detail-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to news
+    </a>
 
-    <!-- Комментарии -->
-    <div class="comments-section">
-        <h2 class="section-title">Комментарии</h2>
-
-        <!-- Форма добавления комментария -->
-        {% if is_authorized %}
-        <div class="comment-form">
-            <div class="comment-avatar">
-                <img src="{{ user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=U' }}" alt="User">
-            </div>
-            <div class="comment-input-area">
-                <textarea id="comment-text" placeholder="Написать комментарий..."></textarea>
-                <button class="btn-submit" onclick="submitComment()">Отправить</button>
-            </div>
-        </div>
-        {% else %}
-        <div class="comment-login-prompt">
-            <p><a href="{{ url_for('login') }}">Войдите</a>, чтобы оставить комментарий</p>
-        </div>
-        {% endif %}
-
-        <!-- Список комментариев -->
-        <div class="comments-list" id="comments-list">
-            {% for comment in comments %}
-            <div class="comment-item" id="comment-{{ comment.id }}">
-                <div class="comment-avatar">
-                    <img src="{{ comment.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (comment.username|first|upper if comment.username else 'U') }}"
-                         alt="{{ comment.username or 'User' }}">
-                </div>
-                <div class="comment-content">
-                    <div class="comment-header">
-                        <span class="comment-author">{{ comment.username or 'Аноним' }}</span>
-                        <span class="comment-date">{{ comment.created_at or 'только что' }}</span>
-                    </div>
-                    <div class="comment-text">{{ comment.text or '' }}</div>
-                    <div class="comment-actions">
-                        <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ comment.username or '' }}')">Ответить</button>
-                    </div>
-
-                    {% for reply in comment.replies %}
-                    <div class="comment-item reply">
-                        <div class="comment-avatar">
-                            <img src="{{ reply.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (reply.username|first|upper if reply.username else 'U') }}"
-                                 alt="{{ reply.username or 'User' }}">
-                        </div>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="comment-author">{{ reply.username or 'Аноним' }}</span>
-                                <span class="comment-date">{{ reply.created_at or 'только что' }}</span>
-                            </div>
-                            <div class="comment-text">
-                                {% if reply.tagged_username %}
-                                <span class="comment-tag">@{{ reply.tagged_username }}</span>
-                                {% endif %}
-                                {{ reply.text or '' }}
-                            </div>
-                            <div class="comment-actions">
-                                <button class="comment-reply" onclick="replyToComment({{ comment.id }}, '{{ reply.username or '' }}')">Ответить</button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% else %}
-            <div class="comment-empty">Пока нет комментариев. Будьте первым!</div>
-            {% endfor %}
-        </div>
-
-        <!-- Пагинация комментариев -->
-        {% if total_pages is defined and total_pages and total_pages > 1 %}
-        <div class="pagination comments-pagination">
-            {% for p in range(1, total_pages + 1) %}
-            <span class="page-link {% if p == current_page %}active{% endif %}"
-                  onclick="loadCommentsPage({{ p }})">{{ p }}</span>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-    
-    <!-- Кнопка "Назад к новостям" -->
-    <div class="back-to-news">
-        <a href="{{ url_for('news') }}" class="btn-back">
-            ← Вернуться к списку новостей
-        </a>
-    </div>
-    
-    {% else %}
-    <div class="error-message">
-        <h2>Новость не найдена</h2>
-        <p>К сожалению, запрашиваемая новость не существует или была удалена.</p>
-        <a href="{{ url_for('news') }}" class="btn btn-register">Вернуться к новостям</a>
-    </div>
+    {% if news.full_image_url %}
+    <img src="{{ news.full_image_url }}" alt="{{ news.title }}" class="news-detail-hero" loading="lazy">
     {% endif %}
+
+    <div class="news-detail-header">
+        <h1 class="news-detail-title">{{ news.title }}</h1>
+        <div class="news-detail-meta">
+            <div class="news-detail-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>{{ news.created_at or news.date if news.date else 'Recently' }}</span>
+            </div>
+            <div class="news-detail-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Kuronami Editorial</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="news-detail-content">
+        {{ news.full_content | safe }}
+    </div>
 </div>
-
-<script>
-function submitComment() {
-    const textarea = document.getElementById('comment-text');
-    const text = textarea.value.trim();
-    if (!text) return;
-
-    fetch('/api/news/comments/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            news_id: {{ news.id if news else 0 }},
-            text: text,
-            parent_id: window.replyParentId || null
-        })
-    }).then(response => response.json()).then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert(data.error || 'Ошибка при отправке комментария');
-        }
-    }).catch(error => {
-        console.error('Error:', error);
-        alert('Произошла ошибка при отправке. Попробуйте позже.');
-    });
-}
-
-function replyToComment(parentId, username) {
-    const textarea = document.getElementById('comment-text');
-    if (!textarea) return;
-    if (username) {
-        textarea.value = '@' + username + ' ';
-    }
-    textarea.focus();
-    window.replyParentId = parentId;
-}
-
-function loadCommentsPage(page) {
-    location.href = window.location.pathname + '?page=' + page;
-}
-</script>
 {% endblock %}

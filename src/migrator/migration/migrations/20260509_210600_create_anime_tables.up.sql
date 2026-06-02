@@ -94,3 +94,4 @@ CREATE INDEX IF NOT EXISTS idx_anime_genres_anime_id_genre_id ON anime_genres(an
 CREATE INDEX IF NOT EXISTS idx_anime_themes_anime_id_theme_id ON anime_themes(anime_id, theme_id);
 CREATE INDEX IF NOT EXISTS idx_anime_demographics_anime_id_demographic_id ON anime_demographics(anime_id, demographic_id);
 CREATE INDEX IF NOT EXISTS idx_anime_studios_anime_id_studio_id ON anime_studios(anime_id, studio_id);
+    

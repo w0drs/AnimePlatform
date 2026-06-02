@@ -62,38 +62,44 @@ async def anime_page(
     if payload:
         is_authorized = True
         is_admin = payload.get("role") in ["admin", "moder"]
-    # получаем аниме
 
-    data = await anime_service.get_anime_page_data(anime_id, page=page, access_token=request.cookies.get("access_token"))
+    # получаем аниме
+    data = await anime_service.get_anime_page_data(anime_id, page=page,
+                                                   access_token=request.cookies.get("access_token"))
     anime = data["anime"]
     is_favorite = data["is_favorite"]
+
     # Данные аниме
     anime_data = {
         "id": anime_id,
-        "title_english": anime["title_english"],
-        "type": anime["type"],
-        "episodes": anime["episodes"],
-        "duration": anime["duration"],
-        "rating": anime["rating"],
-        "year": anime["year"],
-        "synopsis": anime["synopsis"],
-        "background": None,
-        "trailer_url": anime["trailer_url"],
-        "image_webp_large_url": anime["image_webp_large_url"]
+        "title_english": anime.get("title_english"),
+        "type": anime.get("type"),
+        "episodes": anime.get("episodes"),
+        "duration": anime.get("duration"),
+        "rating": anime.get("rating"),
+        "year": anime.get("year"),
+        "synopsis": anime.get("synopsis"),
+        "background": anime.get("background"),
+        "trailer_url": anime.get("trailer_url"),
+        "image_webp_large_url": anime.get("image_webp_large_url")
     }
-    # Жанры
-    genres = anime['genres']
-    # Студии
-    studios = anime['studios']
+
+    # Жанры, темы, демографика, студии
+    genres = anime.get('genres', [])
+    themes = anime.get('themes', [])  # ← ДОБАВИТЬ
+    demographics = anime.get('demographics', [])  # ← ДОБАВИТЬ
+    studios = anime.get('studios', [])
+
     # Похожие аниме
-    similar_anime = data["recommendations"]
+    similar_anime = data.get("recommendations", [])
+
     # Комментарии
-    comments = data["comments"]
+    comments = data.get("comments", [])
 
     total_pages = 1
     current_page = 1
-
     limit = 10
+
     return templates.TemplateResponse("anime_detail.html", {
         "request": request,
         "active_page": "anime",
@@ -104,6 +110,8 @@ async def anime_page(
         # Данные аниме
         "anime": anime_data,
         "genres": genres,
+        "themes": themes,  # ← ДОБАВИТЬ
+        "demographics": demographics,  # ← ДОБАВИТЬ
         "studios": studios,
 
         # Похожие аниме
@@ -114,7 +122,7 @@ async def anime_page(
         "total_pages": total_pages,
         "current_page": current_page,
 
-        #Есть ли в избранном
+        # Есть ли в избранном
         "is_favorite": is_favorite,
 
         # Для пагинации htmx

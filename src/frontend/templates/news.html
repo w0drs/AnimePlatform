@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Новости аниме-индустрии — Kuronami{% endblock %}
+{% block title %}Anime News — Kuronami{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -12,46 +12,53 @@
             <circle cx="12" cy="14" r="1.5" stroke="#1a1a2e" fill="none"/>
             <circle cx="18" cy="14" r="1.5" stroke="#1a1a2e" fill="none"/>
         </svg>
-        Новости аниме-индустрии
+        Anime News
     </h1>
-    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Свежие анонсы, даты выхода, трейлеры и интервью</p>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Latest announcements, release dates, trailers and interviews</p>
+
+    {% if error %}
+    <div class="error-message" style="background: #fee; padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem; color: #c00;">
+        <p>⚠️ {{ error }}</p>
+    </div>
+    {% endif %}
 
     <div class="news-list">
         {% for news in news_list %}
         <div class="news-item" onclick="location.href='/news/{{ news.id }}'">
-            <img src="{{ news.image_url or 'https://placehold.co/140x140/f5f5f0/6a9ec9?text=' + (news.title|urlencode if news.title else 'News') }}"
+            <img src="{{ news.preview_image_url or 'https://placehold.co/140x140/f5f5f0/6a9ec9?text=' + (news.title|urlencode) }}"
                  alt="{{ news.title }}"
                  class="news-image"
+                 loading="lazy"
                  onerror="this.src='https://placehold.co/140x140/f5f5f0/6a9ec9?text=News'">
             <div class="news-content">
                 <h3 class="news-title">{{ news.title }}</h3>
-                <div class="news-date">{{ news.created_at or news.date }}</div>
-                <p class="news-excerpt">{{ news.excerpt or news.content|truncate(150) }}</p>
+                <div class="news-date">{{ news.created_at or 'Recently' }}</div>
+                <p class="news-excerpt">{{ news.preview_text or news.title }}</p>
             </div>
         </div>
         {% else %}
         <div class="empty-news">
-            <p>😕 Новостей пока нет. Загляните позже!</p>
+            <p>😕 No news available at the moment. Check back later!</p>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Пагинация -->
-    {% if total_pages > 1 %}
+    <!-- Pagination -->
+    {% if total_pages > 1 and total_count > size %}
     <div class="pagination">
         {% if current_page > 1 %}
-        <a href="?page={{ current_page - 1 }}" class="page-link">←</a>
+        <a href="?page={{ current_page - 1 }}&size={{ size }}" class="page-link">←</a>
         {% endif %}
-        
+
         {% set start_page = [1, current_page-2]|max %}
         {% set end_page = [total_pages, current_page+2]|min %}
-        
+
         {% for p in range(start_page, end_page + 1) %}
-        <a href="?page={{ p }}" class="page-link {% if p == current_page %}active{% endif %}">{{ p }}</a>
+        <a href="?page={{ p }}&size={{ size }}" class="page-link {% if p == current_page %}active{% endif %}">{{ p }}</a>
         {% endfor %}
-        
+
         {% if current_page < total_pages %}
-        <a href="?page={{ current_page + 1 }}" class="page-link">→</a>
+        <a href="?page={{ current_page + 1 }}&size={{ size }}" class="page-link">→</a>
         {% endif %}
     </div>
     {% endif %}
