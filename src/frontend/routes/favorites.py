@@ -3,13 +3,15 @@ import httpx
 from starlette.responses import JSONResponse
 
 from src.frontend.config.settings import settings
+from src.frontend.services.auth_decorator import require_auth
 
 router = APIRouter()
 
 @router.post("/api/favorites/{anime_id}")
-async def add_favorite(request: Request, anime_id: int):
+@require_auth
+async def add_favorite(request: Request, anime_id: int, payload: dict = None):
     access_token = request.cookies.get("access_token")
-    if not access_token:
+    if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
 
     async with httpx.AsyncClient() as client:
@@ -25,9 +27,10 @@ async def add_favorite(request: Request, anime_id: int):
 
 
 @router.delete("/api/favorites/{anime_id}")
-async def remove_favorite(request: Request, anime_id: int):
+@require_auth
+async def remove_favorite(request: Request, anime_id: int, payload: dict = None):
     access_token = request.cookies.get("access_token")
-    if not access_token:
+    if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
 
     async with httpx.AsyncClient() as client:

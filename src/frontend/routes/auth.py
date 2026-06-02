@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from src.frontend.services.jwt_service import jwt_service
 from src.frontend.config.settings import settings
 from src.frontend.services.auth_service import auth_service
+from src.frontend.services.auth_decorator import require_auth
 
 from typing import Optional
 from pathlib import Path
@@ -16,15 +17,18 @@ AUTH_SERVICE_URL = settings.auth_service
 
 
 @router.get("/login", response_class=HTMLResponse)
+@require_auth
 async def login_page(
         request: Request,
         next: str = "/main",
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        payload: dict = None
 ):
     """
     GET /login - Показывает HTML форму логина
     """
-    payload, needs_refresh = await jwt_service.verify(request)
+    if payload:
+        return RedirectResponse(url=next, status_code=302)
 
     resp = templates.TemplateResponse("login.html",
     {
@@ -39,13 +43,15 @@ async def login_page(
     return resp
 
 @router.post("/login")
+@require_auth
 async def login(
         request: Request,
         next: str = "/main",
         email: str = Form(...),
-        password: str = Form(...)
+        password: str = Form(...),
+        payload: dict = None
 ):
-    if request.cookies.get("access_token"):
+    if payload:
         return RedirectResponse(url=next, status_code=302)
 
     user_agent = request.headers.get("user-agent", "")
@@ -79,7 +85,7 @@ async def login(
                 secure=settings.env == "production",
                 samesite="lax",
                 max_age=7 * 24 * 60 * 60,  # 7 дней
-                path="/refresh"
+                path="/"
             )
 
         return resp
@@ -98,7 +104,11 @@ async def login(
 )
 
 @router.get("/register")
-async def register_get(request: Request, error: str = None):
+@require_auth
+async def register_get(request: Request, error: str = None, payload: dict = None):
+    if payload:
+        return RedirectResponse(url="/main", status_code=302)
+
     return templates.TemplateResponse("register.html", {
         "request": request,
         "active_page": "register",
@@ -109,13 +119,18 @@ async def register_get(request: Request, error: str = None):
     })
 
 @router.post("/register")
+@require_auth
 async def register_post(
         request: Request,
         login: str = Form(...),
         email: str = Form(...),
         password: str = Form(...),
         confirm_password: str = Form(...),
+        payload: dict = None
 ):
+    if payload:
+        return RedirectResponse(url="/main", status_code=302)
+
     icon_url = settings.default_user_icon_name
     first_name = "Anonim"
     description = ""
@@ -178,7 +193,18 @@ async def refresh_get(request: Request, next: str = "/main"):
         max_age=15 * 60,
     )
 
-    # Пробрасываем Set-Cookie от auth сервиса (новый refresh)
+    # Достаём новый refresh токен из Set-Cookie auth сервиса и ставим с path="/"
     for header_value in response.headers.get_list("set-cookie"):
-        resp.raw_headers.append((b"set-cookie", header_value.encode()))
+        if "refresh=" in header_value:
+            # Вытащить значение токена
+            token_value = header_value.split("refresh=")[1].split(";")[0]
+            resp.set_cookie(
+                key="refresh",
+                value=token_value,
+                httponly=True,
+                secure=settings.env == "production",
+                samesite="lax",
+                max_age=7 * 24 * 60 * 60,
+                path="/",
+            )
     return resp

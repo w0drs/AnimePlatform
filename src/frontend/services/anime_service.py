@@ -5,75 +5,75 @@ from src.frontend.config.settings import settings
 from src.frontend.utils.utils import format_time_ago
 
 class AnimeService:
+    def __init__(self):
+        self.client = httpx.AsyncClient(
+            timeout=httpx.Timeout(10.0),
+            limits=httpx.Limits(max_keepalive_connections=20, max_connections=100)
+        )
 
     async def get_anime(self, anime_id: str) -> dict | None:
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(f"{settings.anime_service}/anime/{anime_id}")
-            except httpx.RequestError:
-                return None
+        try:
+            response = await self.client.get(f"{settings.anime_service}/anime/{anime_id}")
+        except httpx.RequestError:
+            return None
+        print(response.json())
         return response.json() if response.status_code == 200 else None
 
     async def get_recommendations(self, anime_id: str, limit: int = 10) -> dict:
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"{settings.recommends_service}/recommend/anime/{anime_id}",
-                    params={"limit": limit},
-                )
-            except httpx.RequestError:
-                return {}
+        try:
+            response = await self.client.get(
+                f"{settings.recommends_service}/recommend/anime/{anime_id}",
+                params={"limit": limit},
+            )
+        except httpx.RequestError:
+            return {}
         return response.json() if response.status_code == 200 else {}
 
     async def get_comments(self, anime_id: str, page: int = 1) -> dict:
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"{settings.comments_service}/comments/anime/{anime_id}",
-                    params={"page": page},
-                )
-            except httpx.RequestError:
-                return {}
+        try:
+            response = await self.client.get(
+                f"{settings.comments_service}/comments/anime/{anime_id}",
+                params={"page": page},
+            )
+        except httpx.RequestError:
+            return {}
         return response.json() if response.status_code == 200 else {}
 
     async def get_animes_by_ids(self, ids: list[int]) -> list:
         if not ids:
             return []
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"{settings.anime_service}/anime/by-ids",
-                    params={"ids": ",".join(str(i) for i in ids)},
-                )
-            except httpx.RequestError:
-                return []
+        try:
+            response = await self.client.get(
+                f"{settings.anime_service}/anime/by-ids",
+                params={"ids": ",".join(str(i) for i in ids)},
+            )
+        except httpx.RequestError:
+            return []
         return response.json() if response.status_code == 200 else []
 
     async def get_users_batch(self, user_ids: list[str]) -> dict:
         if not user_ids:
             return {}
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(
-                    f"{settings.user_service}/users/batch",
-                    json={"users_id": user_ids},
-                )
-            except httpx.RequestError:
-                return {}
+        try:
+            response = await self.client.post(
+                f"{settings.user_service}/users/batch",
+                json={"users_id": user_ids},
+            )
+        except httpx.RequestError:
+            return {}
         return response.json() if response.status_code == 200 else {}
 
     async def check_favorite(self, anime_id: str, access_token: str) -> bool:
         if not access_token:
             return False
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"{settings.user_service}/user/favorites/me/{anime_id}",
-                    headers={"Authorization": f"Bearer {access_token}"},
-                )
-                return response.status_code == 200
-            except httpx.RequestError:
-                return False
+        try:
+            response = await self.client.get(
+                f"{settings.user_service}/user/favorites/me/{anime_id}",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            return response.status_code == 200
+        except httpx.RequestError:
+            return False
 
     async def enrich_comments(self, comments_raw: dict) -> list:
         comments = comments_raw.get("comments", [])

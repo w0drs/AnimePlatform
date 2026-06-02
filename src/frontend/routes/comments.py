@@ -6,6 +6,7 @@ import httpx
 from src.frontend.services.anime_service import anime_service
 from src.frontend.config.settings import settings
 from src.frontend.schemas.comments import CommentCreate
+from src.frontend.services.auth_decorator import require_auth
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -15,9 +16,10 @@ templates.env.globals.update(max=max, min=min)
 
 # API роуты для комментариев
 @router.post("/api/comments/add", name="api_add_comment")
-async def api_add_comment(request: Request, comment: CommentCreate):
+@require_auth
+async def api_add_comment(request: Request, comment: CommentCreate, payload: dict = None):
     access_token = request.cookies.get("access_token")
-    if not access_token:
+    if not payload:
         return {"success": False, "error": "not authorized"}
 
     body = {"text": comment.text, "anime_id": comment.anime_id}

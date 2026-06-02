@@ -13,14 +13,14 @@ async def fetch_user_info(access_token: str) -> dict:
             return {}
 
 
-async def fetch_user_favorites(access_token: str) -> list:
+async def fetch_user_favorites(access_token: str) -> dict:
     headers = {"Authorization": f"Bearer {access_token}"}
     async with httpx.AsyncClient() as client:
         try:
             r = await client.get(f"{settings.user_service}/user/favorites/me", headers=headers)
-            return r.json() if r.status_code == 200 else []
+            return r.json() if r.status_code == 200 else {'favorites': []}
         except httpx.RequestError:
-            return []
+            return {'favorites': []}
 
 
 async def fetch_user_sessions(access_token: str) -> list:

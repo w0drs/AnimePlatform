@@ -9,7 +9,7 @@ import urllib.parse
 from src.frontend.services.jwt_service import jwt_service
 from src.frontend.schemas import users
 from src.frontend.services.anime_service import anime_service
-
+from src.frontend.services.auth_decorator import require_auth
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -18,18 +18,19 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 templates.env.globals.update(max=max, min=min)
 
 @router.get("/main", response_class=HTMLResponse)
+@require_auth
 async def main(
         request: Request,
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        payload: dict = None
 ):
     """
     GET /main - Показывает HTML форму главной страницы
     """
-    payload, needs_refresh = await jwt_service.verify(request)
     is_authorized, is_admin = False, False
-    if not needs_refresh:
+    if payload:
         is_authorized = True
-        is_admin = payload["role"] == users.RoleADMIN or payload["role"] == users.RoleMODER
+        is_admin = payload.get("role") in ["admin", "moder"]
 
     return templates.TemplateResponse("main.html", {
         "request": request,
@@ -46,26 +47,26 @@ async def main(
 
 
 @router.get("/anime/{anime_id}", response_class=HTMLResponse)
+@require_auth
 async def anime_page(
         request: Request,
         anime_id: int,
         page: int = 1,
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        payload: dict = None
 ):
     """
     GET /anime/{anime_id} - Страница детального просмотра аниме
     """
-    payload, needs_refresh = await jwt_service.verify(request)
     is_authorized, is_admin = False, False
-    if not needs_refresh:
+    if payload:
         is_authorized = True
-        is_admin = payload["role"] == users.RoleADMIN or payload["role"] == users.RoleMODER
+        is_admin = payload.get("role") in ["admin", "moder"]
     # получаем аниме
 
     data = await anime_service.get_anime_page_data(anime_id, page=page, access_token=request.cookies.get("access_token"))
     anime = data["anime"]
     is_favorite = data["is_favorite"]
-
     # Данные аниме
     anime_data = {
         "id": anime_id,
@@ -125,6 +126,7 @@ async def anime_page(
 
 
 @router.get("/catalog", response_class=HTMLResponse, name="catalog")
+@require_auth
 async def catalog(
         request: Request,
         year: Optional[str] = None,
@@ -137,15 +139,15 @@ async def catalog(
         search: Optional[str] = None,
         page: int = 1,
         size: int = 20,
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        payload: dict = None
 ):
     """Страница каталога аниме"""
 
     # Проверка авторизации
-    payload, needs_refresh = await jwt_service.verify(request)
     is_authorized, is_admin = False, False
 
-    if not needs_refresh:
+    if payload:
         is_authorized = True
         is_admin = payload.get("role") in ["admin", "moder"]
 

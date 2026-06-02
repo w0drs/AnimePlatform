@@ -8,6 +8,8 @@ from pathlib import Path
 from src.frontend.services.jwt_service import jwt_service
 from src.frontend.schemas import users
 from src.frontend.services.user_service import *
+from src.frontend.services.auth_decorator import require_auth
+from src.frontend.services.anime_service import anime_service
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -15,12 +17,15 @@ router = APIRouter()
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 @router.get("/profile", response_class=HTMLResponse)
+@require_auth
 async def profile(
         request: Request,
         tab: str = "favorites",
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        payload: dict = None
 ):
-    if not request.cookies.get("access_token"):
+    access_token = request.cookies.get("access_token")
+    if not payload:
         return RedirectResponse(url="/login", status_code=302)
 
     """
@@ -30,26 +35,20 @@ async def profile(
     if needs_refresh:
         return RedirectResponse(url=f"/refresh?next=/profile", status_code=302)
 
-    is_authorized, is_admin = True, payload["role"] == users.RoleADMIN or payload["role"] == users.RoleMODER
+    is_authorized, is_admin = True, payload["role"] in (users.RoleADMIN, users.RoleMODER)
 
-    access_token = request.cookies.get("access_token")
     user = await fetch_user_info(access_token)
     if not user:
         return RedirectResponse(url=f"/refresh?next=/profile", status_code=302)
 
     favorites, sessions = {}, {}
     if tab == "favorites":
-        favorites = await fetch_user_favorites(access_token)
+        favorites_ids = await fetch_user_favorites(access_token)
+        favorites = await anime_service.get_animes_by_ids([item['AnimeID'] for item in favorites_ids.get('favorites')])
     elif tab == "sessions":
         sessions = await fetch_user_sessions(access_token)
-
     if sessions:
         sessions = sessions.get("sessions")
-    if favorites:
-        favorites = favorites.get("favorites")
-
-
-    # Заглушка
     return templates.TemplateResponse("profile.html", {
         # что всегда есть
         "request": request,
@@ -66,13 +65,18 @@ async def profile(
 )
 
 @router.post("/logout")
-async def logout(request: Request):
+@require_auth
+async def logout(request: Request, payload: dict = None):
+    access_token = request.cookies.get("access_token")
+    if not payload:
+        return RedirectResponse(url="/login", status_code=302)
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
                 f"{settings.auth_service}/auth/logout",
                 cookies=request.cookies,
-                headers={"Authorization": f'Bearer {request.cookies.get("access_token")}'}
+                headers={"Authorization": f'Bearer {access_token}'}
             )
         except Exception as e:
             print("exception", e)
@@ -82,18 +86,22 @@ async def logout(request: Request):
 
     resp = RedirectResponse(url="/main", status_code=302)
 
-    resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="strict", path="/auth/refresh")
+    resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="strict", path="/")
     resp.set_cookie("access_token", "", max_age=0, httponly=True, samesite="lax", path="/")
     return resp
 
 @router.post("/settings/profile")
+@require_auth
 async def update_profile(
         request: Request,
         first_name: str = Form(default=""),
         description: str = Form(default=""),
         icon_url: str = Form(default=""),
+        payload: dict = None
 ):
     access_token = request.cookies.get("access_token")
+    if not payload:
+        return RedirectResponse(url="/login", status_code=302)
 
     async with httpx.AsyncClient() as client:
         try:
@@ -115,8 +123,11 @@ async def update_profile(
     return RedirectResponse(url="/profile", status_code=302)
 
 @router.post("/settings/sessions/delete-all")
-async def delete_all_sessions(request: Request):
+@require_auth
+async def delete_all_sessions(request: Request, payload: dict = None):
     access_token = request.cookies.get("access_token")
+    if not payload:
+        return RedirectResponse(url="/login", status_code=302)
 
     async with httpx.AsyncClient() as client:
         try:
@@ -130,17 +141,21 @@ async def delete_all_sessions(request: Request):
     # Удаляем куки и редиректим на логин
     resp = RedirectResponse(url="/main", status_code=302)
     resp.set_cookie("access_token", "", max_age=0, httponly=True, samesite="lax", path="/")
-    resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="strict", path="/auth/refresh")
+    resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="strict", path="/")
     return resp
 
 
 @router.post("/settings/password")
+@require_auth
 async def update_password(
         request: Request,
         old_password: str = Form(...),
         new_password: str = Form(...),
+        payload: dict = None
 ):
     access_token = request.cookies.get("access_token")
+    if not payload:
+        return RedirectResponse(url="/login", status_code=302)
 
     async with httpx.AsyncClient() as client:
         try:
@@ -166,8 +181,11 @@ async def update_password(
     return resp
 
 @router.post("/settings/delete")
-async def delete_account(request: Request):
+@require_auth
+async def delete_account(request: Request, payload: dict = None):
     access_token = request.cookies.get("access_token")
+    if not payload:
+        return RedirectResponse(url="/login", status_code=302)
 
     async with httpx.AsyncClient() as client:
         try:
@@ -183,5 +201,5 @@ async def delete_account(request: Request):
 
     resp = RedirectResponse(url="/main", status_code=302)
     resp.set_cookie("access_token", "", max_age=0, httponly=True, samesite="lax", path="/")
-    resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="strict", path="/auth/refresh")
+    resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="strict", path="/")
     return resp
