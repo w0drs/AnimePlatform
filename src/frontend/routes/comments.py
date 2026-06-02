@@ -16,12 +16,11 @@ templates.env.globals.update(max=max, min=min)
 
 # API роуты для комментариев
 @router.post("/api/comments/add", name="api_add_comment")
-@require_auth
-async def api_add_comment(request: Request, comment: CommentCreate, payload: dict = None):
+async def api_add_comment(request: Request, comment: CommentCreate):
+    print(comment)
     access_token = request.cookies.get("access_token")
-    if not payload:
+    if not access_token:
         return {"success": False, "error": "not authorized"}
-
     body = {"text": comment.text, "anime_id": comment.anime_id}
     if comment.tagged_user_id:
         body["tagged_user_id"] = comment.tagged_user_id
