@@ -17,7 +17,6 @@ templates.env.globals.update(max=max, min=min)
 # API роуты для комментариев
 @router.post("/api/comments/add", name="api_add_comment")
 async def api_add_comment(request: Request, comment: CommentCreate):
-    print(comment)
     access_token = request.cookies.get("access_token")
     if not access_token:
         return {"success": False, "error": "not authorized"}

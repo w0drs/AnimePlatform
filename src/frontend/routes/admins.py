@@ -4,7 +4,9 @@ from fastapi.templating import Jinja2Templates
 import httpx
 from pathlib import Path
 from typing import Optional, List
+from starlette.responses import JSONResponse
 
+from src.frontend.services.auth_decorator import require_auth
 from src.frontend.services.s3_service import upload_image
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,12 +62,18 @@ async def admin_redirect():
 
 
 @router.get("/anime", response_class=HTMLResponse)
+@require_auth
 async def admin_anime_list(
         request: Request,
         page: int = 1,
         size: int = 20,
         payload: dict = None
 ):
+    if not payload:
+        return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
+    if payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"{ANIME_API_URL}/anime/filter",
@@ -95,10 +103,16 @@ async def admin_anime_list(
 
 
 @router.get("/anime/create", response_class=HTMLResponse)
+@require_auth
 async def admin_anime_create_form(
         request: Request,
         payload: dict = None
 ):
+    if not payload:
+        return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
+    if payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
     genres_list = await get_genres_list()
     themes_list = await get_themes_list()
     demographics_list = await get_demographics_list()
@@ -118,6 +132,7 @@ async def admin_anime_create_form(
 
 
 @router.post("/anime/create", response_class=HTMLResponse)
+@require_auth
 async def admin_anime_create(
         request: Request,
         title_english: str = Form(...),
@@ -137,6 +152,10 @@ async def admin_anime_create(
         payload: dict = None
 ):
     """Создание аниме с загрузкой изображения"""
+    if not payload:
+        return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
+    if payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     # Загружаем изображение на S3 если оно есть
     image_url = None
@@ -173,10 +192,11 @@ async def admin_anime_create(
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{ANIME_API_URL}/anime/",
+            headers={"Authorization": f"Bearer {request.cookies.get('access_token')}"},
             json=data,
             timeout=10.0
         )
-
+        print(response.status_code)
         if response.status_code == 201:
             return RedirectResponse(url="/admin/anime", status_code=303)
 
@@ -184,11 +204,17 @@ async def admin_anime_create(
 
 
 @router.get("/anime/{anime_id}/edit", response_class=HTMLResponse)
+@require_auth
 async def admin_anime_edit_form(
         request: Request,
         anime_id: int,
         payload: dict = None
 ):
+    if not payload:
+        return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
+    if payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
     anime = await get_anime_by_id(anime_id)
     if not anime:
         raise HTTPException(status_code=404, detail="Anime not found")
@@ -212,6 +238,7 @@ async def admin_anime_edit_form(
 
 
 @router.post("/anime/{anime_id}/edit", response_class=HTMLResponse)
+@require_auth
 async def admin_anime_edit(
         request: Request,
         anime_id: int,
@@ -232,6 +259,10 @@ async def admin_anime_edit(
         payload: dict = None
 ):
     """Обновление аниме с возможностью загрузки нового изображения"""
+    if not payload:
+        return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
+    if payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     # Загружаем новое изображение если оно есть
     image_url = None
@@ -279,11 +310,17 @@ async def admin_anime_edit(
 
 
 @router.post("/anime/{anime_id}/delete", response_class=HTMLResponse)
+@require_auth
 async def admin_anime_delete(
         request: Request,
         anime_id: int,
         payload: dict = None
 ):
+    if not payload:
+        return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
+    if payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
     async with httpx.AsyncClient() as client:
         response = await client.delete(
             f"{ANIME_API_URL}/anime/{anime_id}",
