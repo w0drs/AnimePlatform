@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Kuronami{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="anime-page" style="max-width: 1000px; margin: 0 auto;">
+        <div class="anime-main" style="padding: 2rem;">
+            <div style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h1 class="anime-title-main" style="margin-bottom: 0;">{{ title }}</h1>
+                    {% if anime and anime.id %}
+                    <button id="delete-btn" class="btn-filter" style="background: #dc2626; color: white;" onclick="openDeleteModal()">
+                        🗑️ Delete
+                    </button>
+                    {% endif %}
+                </div>
+
+                {% if error %}
+                <div style="background: #fee; color: #c00; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post" id="anime-form" enctype="multipart/form-data">
+                    <!-- Basic Info -->
+                    <div class="section-block" style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Basic Information</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="filter-group">
+                                <label>Title (English) *</label>
+                                <input type="text" name="title_english" value="{{ anime.title_english if anime else '' }}" required>
+                            </div>
+                            <div class="filter-group">
+                                <label>Type</label>
+                                <select name="type">
+                                    <option value="">-- Select --</option>
+                                    <option value="TV" {% if anime and anime.type == 'TV' %}selected{% endif %}>TV</option>
+                                    <option value="Movie" {% if anime and anime.type == 'Movie' %}selected{% endif %}>Movie</option>
+                                    <option value="OVA" {% if anime and anime.type == 'OVA' %}selected{% endif %}>OVA</option>
+                                    <option value="ONA" {% if anime and anime.type == 'ONA' %}selected{% endif %}>ONA</option>
+                                    <option value="Special" {% if anime and anime.type == 'Special' %}selected{% endif %}>Special</option>
+                                    <option value="TV Special" {% if anime and anime.type == 'TV Special' %}selected{% endif %}>TV Special</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Episodes</label>
+                                <input type="number" name="episodes" value="{{ anime.episodes if anime and anime.episodes else '' }}" min="0">
+                            </div>
+                            <div class="filter-group">
+                                <label>Duration</label>
+                                <input type="text" name="duration" value="{{ anime.duration if anime else '' }}" placeholder="e.g., 24 min per ep">
+                            </div>
+                            <div class="filter-group">
+                                <label>Rating (Age)</label>
+                                <select name="rating">
+                                    <option value="">-- Select --</option>
+                                    <option value="G - All Ages" {% if anime and anime.rating == 'G - All Ages' %}selected{% endif %}>G — All Ages</option>
+                                    <option value="PG - Children" {% if anime and anime.rating == 'PG - Children' %}selected{% endif %}>PG — Children</option>
+                                    <option value="PG-13 - Teens 13 or older" {% if anime and anime.rating == 'PG-13 - Teens 13 or older' %}selected{% endif %}>PG-13 — Teens 13+</option>
+                                    <option value="R - 17+ (violence & profanity)" {% if anime and anime.rating == 'R - 17+ (violence & profanity)' %}selected{% endif %}>R — 17+</option>
+                                    <option value="R+ - Mild Nudity" {% if anime and anime.rating == 'R+ - Mild Nudity' %}selected{% endif %}>R+ — 18+</option>
+                                    <option value="Rx - Hentai" {% if anime and anime.rating == 'Rx - Hentai' %}selected{% endif %}>Rx — Hentai</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Year</label>
+                                <input type="number" name="year" value="{{ anime.year if anime and anime.year else '' }}" min="1900" max="2026">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Images -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Images</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="filter-group">
+                                <label>Poster Image</label>
+                                {% if anime and anime.image_webp_large_url %}
+                                <div style="margin-bottom: 0.5rem;">
+                                    <img src="{{ anime.image_webp_large_url }}" alt="Current poster" style="width: 100px; border-radius: 8px;">
+                                    <p style="font-size: 0.75rem; color: #666;">Current poster</p>
+                                </div>
+                                {% endif %}
+                                <input type="file" name="poster_image" accept="image/jpeg,image/png,image/webp">
+                                <input type="hidden" name="image_webp_large_url" value="{{ anime.image_webp_large_url if anime else '' }}">
+                                <p style="font-size: 0.7rem; color: #999; margin-top: 0.25rem;">Leave empty to keep current image</p>
+                            </div>
+                            <div class="filter-group">
+                                <label>Trailer URL (YouTube)</label>
+                                <input type="url" name="trailer_url" value="{{ anime.trailer_url if anime else '' }}" placeholder="https://www.youtube.com/watch?v=...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Genres (Checkboxes) -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Genres</h3>
+                        <div class="checkbox-group">
+                            {% for genre_id, genre_name in genres_list %}
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="genres" value="{{ genre_name }}" id="genre_{{ genre_id }}" {% if anime and genre_name in anime.genres %}checked{% endif %}>
+                                <label for="genre_{{ genre_id }}">{{ genre_name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Themes (Checkboxes) -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Themes</h3>
+                        <div class="checkbox-group">
+                            {% for theme_id, theme_name in themes_list %}
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="themes" value="{{ theme_name }}" id="theme_{{ theme_id }}" {% if anime and theme_name in anime.themes %}checked{% endif %}>
+                                <label for="theme_{{ theme_id }}">{{ theme_name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Demographics (Checkboxes) -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Demographics</h3>
+                        <div class="checkbox-group">
+                            {% for demo_id, demo_name in demographics_list %}
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="demographics" value="{{ demo_name }}" id="demo_{{ demo_id }}" {% if anime and demo_name in anime.demographics %}checked{% endif %}>
+                                <label for="demo_{{ demo_id }}">{{ demo_name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Studios (Autocomplete) -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Studios</h3>
+                        <div class="autocomplete-container">
+                            <input type="text" id="studio-search" class="autocomplete-input" placeholder="Search and select studios..." autocomplete="off">
+                            <div id="studio-suggestions" class="autocomplete-suggestions"></div>
+                        </div>
+                        <div id="selected-studios" class="selected-studios">
+                            {% if anime and anime.studios %}
+                                {% for studio in anime.studios %}
+                                <span class="studio-tag">
+                                    {{ studio }}
+                                    <span class="studio-tag-remove" onclick="removeStudio('{{ studio }}')">×</span>
+                                </span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <input type="hidden" name="studios" id="studios-hidden" value="{% if anime and anime.studios %}{{ anime.studios|join(',') }}{% endif %}">
+                    </div>
+
+                    <!-- Synopsis & Background -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Description</h3>
+                        <div class="filter-group">
+                            <label>Synopsis</label>
+                            <textarea name="synopsis" rows="8" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit;">{{ anime.synopsis if anime else '' }}</textarea>
+                        </div>
+                        <div class="filter-group">
+                            <label>Background (Optional)</label>
+                            <textarea name="background" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit;">{{ anime.background if anime else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button type="submit" class="btn-filter" style="background: var(--accent-darker);">💾 Save</button>
+                        <a href="/admin/anime" class="btn-filter-reset" style="text-decoration: none;">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal modal--confirm">
+        <div class="modal-header">
+            <div class="modal-title">Delete Anime</div>
+            <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-confirm-text">Are you sure you want to delete <strong>"{{ anime.title_english if anime else '' }}"</strong>?</p>
+            <p class="modal-confirm-text" style="color: #dc2626; font-size: 0.85rem;">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeDeleteModal()">Cancel</button>
+            <form method="post" action="/admin/anime/{{ anime.id }}/delete" style="display: inline;">
+                <button type="submit" class="modal-btn modal-btn--danger">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Autocomplete для студий
+const studiosList = {{ studios_list | tojson }};
+
+const studioSearch = document.getElementById('studio-search');
+const studioSuggestions = document.getElementById('studio-suggestions');
+const selectedStudiosContainer = document.getElementById('selected-studios');
+const studiosHidden = document.getElementById('studios-hidden');
+
+let selectedStudios = [];
+
+function initSelectedStudios() {
+    if (studiosHidden.value) {
+        selectedStudios = studiosHidden.value.split(',');
+        renderSelectedStudios();
+    }
+}
+
+function renderSelectedStudios() {
+    selectedStudiosContainer.innerHTML = selectedStudios.map(studio => `
+        <span class="studio-tag">
+            ${studio}
+            <span class="studio-tag-remove" onclick="removeStudio('${studio.replace(/'/g, "\\'")}')">×</span>
+        </span>
+    `).join('');
+    studiosHidden.value = selectedStudios.join(',');
+}
+
+function removeStudio(studio) {
+    selectedStudios = selectedStudios.filter(s => s !== studio);
+    renderSelectedStudios();
+}
+
+function addStudio(studio) {
+    if (!selectedStudios.includes(studio)) {
+        selectedStudios.push(studio);
+        renderSelectedStudios();
+    }
+    studioSearch.value = '';
+    studioSuggestions.classList.remove('active');
+}
+
+studioSearch.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    if (query.length < 2) {
+        studioSuggestions.classList.remove('active');
+        return;
+    }
+
+    const filtered = studiosList.filter(studio =>
+        studio.toLowerCase().includes(query) && !selectedStudios.includes(studio)
+    ).slice(0, 10);
+
+    if (filtered.length > 0) {
+        studioSuggestions.innerHTML = filtered.map(studio =>
+            `<div class="autocomplete-suggestion" onclick="addStudio('${studio.replace(/'/g, "\\'")}')">${studio}</div>`
+        ).join('');
+        studioSuggestions.classList.add('active');
+    } else {
+        studioSuggestions.classList.remove('active');
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (!studioSearch.contains(e.target) && !studioSuggestions.contains(e.target)) {
+        studioSuggestions.classList.remove('active');
+    }
+});
+
+document.getElementById('anime-form').addEventListener('submit', function() {
+    studiosHidden.value = selectedStudios.join(',');
+});
+
+initSelectedStudios();
+
+function openDeleteModal() {
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+}
+</script>
+{% endblock %}

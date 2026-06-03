@@ -10,20 +10,22 @@ from src.anime_service.api.deps import require_moder_or_admin
 router = APIRouter(prefix="/anime", tags=["anime"])
 
 
+# ============= СТАТИЧЕСКИЕ ПУТИ (ДОЛЖНЫ БЫТЬ ВЫШЕ) =============
+
 @router.get("/filter", response_model=AnimeListResponse)
 async def filter_anime(
-    page: int = Query(1, ge=1),
-    size: int = Query(20, ge=1, le=100),
-    year: Optional[int] = Query(None),
-    year_from: Optional[int] = Query(None),
-    year_to: Optional[int] = Query(None),
-    anime_type: Optional[str] = Query(None, alias="type"),
-    rating: Optional[str] = Query(None),
-    genre: Optional[str] = Query(None),
-    theme: Optional[str] = Query(None),
-    demographic: Optional[str] = Query(None),
-    studio: Optional[str] = Query(None),
-    search: Optional[str] = Query(None)
+        page: int = Query(1, ge=1),
+        size: int = Query(20, ge=1, le=100),
+        year: Optional[int] = Query(None),
+        year_from: Optional[int] = Query(None),
+        year_to: Optional[int] = Query(None),
+        anime_type: Optional[str] = Query(None, alias="type"),
+        rating: Optional[str] = Query(None),
+        genre: Optional[str] = Query(None),
+        theme: Optional[str] = Query(None),
+        demographic: Optional[str] = Query(None),
+        studio: Optional[str] = Query(None),
+        search: Optional[str] = Query(None)
 ):
     """Фильтрация аниме с пагинацией"""
     offset = (page - 1) * size
@@ -52,9 +54,19 @@ async def filter_anime(
     )
 
 
+@router.get("/search", response_model=List[AnimeResponse])
+async def search_anime(
+        q: str = Query(..., min_length=1, description="Поисковый запрос"),
+        limit: int = Query(20, ge=1, le=50, description="Лимит результатов")
+):
+    """Быстрый поиск аниме по названию"""
+    results = AnimeRepository.search(q, limit)
+    return [AnimeResponse(**item) for item in results]
+
+
 @router.get("/by-ids", response_model=List[AnimeDetailResponse])
 async def get_anime_by_ids(
-    ids: str = Query(..., description="ID через запятую, например: 1,2,3")
+        ids: str = Query(..., description="ID через запятую, например: 1,2,3")
 ):
     """Получить аниме по списку ID с жанрами и темами"""
     try:
@@ -83,6 +95,32 @@ async def get_anime_by_ids(
     return result
 
 
+@router.get("/genres")
+async def get_genres():
+    """Получить все жанры"""
+    return AnimeRepository.get_all_genres()
+
+
+@router.get("/themes")
+async def get_themes():
+    """Получить все темы"""
+    return AnimeRepository.get_all_themes()
+
+
+@router.get("/demographics")
+async def get_demographics():
+    """Получить все демографики"""
+    return AnimeRepository.get_all_demographics()
+
+
+@router.get("/studios")
+async def get_studios():
+    """Получить все студии"""
+    return AnimeRepository.get_all_studios()
+
+
+# ============= ЭНДПОИНТЫ С ПЕРЕМЕННОЙ В ПУТИ (ДОЛЖНЫ БЫТЬ ПОСЛЕДНИМИ) =============
+
 @router.get("/{anime_id}", response_model=AnimeDetailResponse)
 async def get_anime(anime_id: int):
     """Получить аниме по ID"""
@@ -92,20 +130,10 @@ async def get_anime(anime_id: int):
     return AnimeDetailResponse(**anime)
 
 
-@router.get("/search", response_model=List[AnimeResponse])
-async def search_anime(
-    q: str = Query(..., min_length=1, description="Поисковый запрос"),
-    limit: int = Query(20, ge=1, le=50, description="Лимит результатов")
-):
-    """Быстрый поиск аниме по названию"""
-    results = AnimeRepository.search(q, limit)
-    return [AnimeResponse(**item) for item in results]
-
-
 @router.post("/", response_model=AnimeResponse, status_code=status.HTTP_201_CREATED)
 async def create_anime(
-    anime: AnimeCreate,
-    user: dict = Depends(require_moder_or_admin)
+        anime: AnimeCreate,
+        user: dict = Depends(require_moder_or_admin)
 ):
     """Создать аниме (только модеры и админы)"""
     anime_id = AnimeRepository.create(anime.model_dump(exclude_none=True))
@@ -115,9 +143,9 @@ async def create_anime(
 
 @router.put("/{anime_id}", response_model=AnimeResponse)
 async def update_anime(
-    anime_id: int,
-    anime: AnimeUpdate,
-    user: dict = Depends(require_moder_or_admin)
+        anime_id: int,
+        anime: AnimeUpdate,
+        user: dict = Depends(require_moder_or_admin)
 ):
     """Обновить аниме (только модеры и админы)"""
     updated = AnimeRepository.update(anime_id, anime.model_dump(exclude_none=True))
@@ -130,8 +158,8 @@ async def update_anime(
 
 @router.delete("/{anime_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_anime(
-    anime_id: int,
-    user: dict = Depends(require_moder_or_admin)
+        anime_id: int,
+        user: dict = Depends(require_moder_or_admin)
 ):
     """Удалить аниме (только модеры и админы)"""
     deleted = AnimeRepository.delete(anime_id)

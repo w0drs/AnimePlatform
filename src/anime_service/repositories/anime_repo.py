@@ -217,7 +217,6 @@ class AnimeRepository:
         Фильтрация аниме с пагинацией (оптимизированная версия, 1 запрос)
         """
         with db.get_cursor() as cur:
-            # ============= 1. Базовый запрос для фильтрации ID =============
             filter_query = """
                 SELECT DISTINCT a.id
                 FROM anime a
@@ -279,7 +278,6 @@ class AnimeRepository:
                 filter_query += " AND a.title_english ILIKE %s"
                 params.append(f"%{search}%")
 
-            # ============= 2. Подсчет общего количества =============
             count_query = f"SELECT COUNT(*) as total FROM ({filter_query}) as filtered"
             cur.execute(count_query, params)
             total = cur.fetchone()['total']
@@ -287,7 +285,6 @@ class AnimeRepository:
             if total == 0:
                 return [], 0
 
-            # ============= 3. Получаем ID с пагинацией =============
             filter_query += " ORDER BY a.id LIMIT %s OFFSET %s"
             params.extend([limit, offset])
 
@@ -303,7 +300,6 @@ class AnimeRepository:
             if not anime_ids:
                 return [], 0
 
-            # ============= 4. ОДНИМ ЗАПРОСОМ получаем все данные =============
             placeholders = ','.join(['%s'] * len(anime_ids))
 
             cur.execute(f"""
@@ -408,3 +404,31 @@ class AnimeRepository:
                 ORDER BY s.name
             """, (anime_id,))
             return [row['name'] for row in cur.fetchall()]
+
+    @staticmethod
+    def get_all_genres() -> List[Dict]:
+        """Получить все жанры"""
+        with db.get_cursor() as cur:
+            cur.execute("SELECT id, name FROM genres ORDER BY name")
+            return cur.fetchall()
+
+    @staticmethod
+    def get_all_themes() -> List[Dict]:
+        """Получить все темы"""
+        with db.get_cursor() as cur:
+            cur.execute("SELECT id, name FROM themes ORDER BY name")
+            return cur.fetchall()
+
+    @staticmethod
+    def get_all_demographics() -> List[Dict]:
+        """Получить все демографики"""
+        with db.get_cursor() as cur:
+            cur.execute("SELECT id, name FROM demographics ORDER BY name")
+            return cur.fetchall()
+
+    @staticmethod
+    def get_all_studios() -> List[Dict]:
+        """Получить все студии"""
+        with db.get_cursor() as cur:
+            cur.execute("SELECT id, name FROM studios ORDER BY name")
+            return cur.fetchall()
