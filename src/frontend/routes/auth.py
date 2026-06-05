@@ -178,7 +178,10 @@ async def refresh_get(request: Request, next: str = "/main"):
         except httpx.RequestError:
             return RedirectResponse(url="/login", status_code=302)
     if response.status_code != 200:
-        return RedirectResponse(url="/login", status_code=302)
+        resp = RedirectResponse(url="/login", status_code=302)
+        resp.set_cookie("access_token", "", max_age=0, httponly=True, samesite="lax", path="/")
+        resp.set_cookie("refresh", "", max_age=0, httponly=True, samesite="lax", path="/")
+        return resp
     data = response.json()
     new_access_token = data.get("access_token")
 

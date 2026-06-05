@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Request, Query, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from src.frontend.config.settings import settings
+from src.frontend.services.auth_decorator import require_auth
+from src.frontend.schemas.users import RoleADMIN,RoleMODER,RoleKey
+
 import httpx
 from typing import Optional
 from pathlib import Path
-from src.frontend.config.settings import settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,13 +19,20 @@ ANIME_API_URL = settings.news_service
 
 
 @router.get("/news", response_class=HTMLResponse, name="news")
+@require_auth
 async def news_page(
         request: Request,
         page: int = Query(1, ge=1),
         size: int = Query(10, ge=1, le=50),
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        payload: dict = None
 ):
     """Страница новостей с реальными данными из API"""
+    is_authorized, is_admin = False, False
+    if payload:
+        is_authorized = True
+        is_admin = payload.get(RoleKey) in [RoleADMIN, RoleMODER]
+
 
     offset = (page - 1) * size
 
@@ -65,8 +75,8 @@ async def news_page(
     return templates.TemplateResponse("news.html", {
         "request": request,
         "active_page": "news",
-        "is_authorized": False,
-        "is_admin": False,
+        "is_authorized": is_authorized,
+        "is_admin": is_admin,
         "news_list": news_list,
         "total_count": total,
         "total_pages": total_pages,
@@ -76,12 +86,18 @@ async def news_page(
 
 
 @router.get("/news/{news_id}", response_class=HTMLResponse, name="news_detail")
+@require_auth
 async def news_detail_page(
         request: Request,
         news_id: int,
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        payload: dict = None
 ):
     """Страница отдельной новости с реальными данными из API"""
+    is_authorized, is_admin = False, False
+    if payload:
+        is_authorized = True
+        is_admin = payload.get(RoleKey) in [RoleADMIN, RoleMODER]
 
     async with httpx.AsyncClient() as client:
         try:
@@ -109,8 +125,8 @@ async def news_detail_page(
     return templates.TemplateResponse("news_detail.html", {
         "request": request,
         "active_page": "news",
-        "is_authorized": False,
-        "is_admin": False,
+        "is_authorized": is_authorized,
+        "is_admin": is_admin,
         "news": news_data,
         "error": error
     })
