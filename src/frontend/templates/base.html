@@ -21,7 +21,7 @@
                 <li><a href="{{ url_for('main') }}" {% if active_page == 'home' %}class="active"{% endif %}>Главная</a></li>
                 <li><a href="{{ url_for('catalog') }}" {% if active_page == 'catalog' %}class="active"{% endif %}>Каталог</a></li>
                 <li><a href="{{ url_for('news') }}" {% if active_page == 'news' %}class="active"{% endif %}>Новости</a></li>
-                {% if is_admin %}<li><a href="/admin/anime">Admin</a></li>{% endif %}
+                {% if is_admin %}<li><a href="/admin">Admin</a></li>{% endif %}
             </ul>
             {% if is_authorized %}
             <div class="auth-buttons">

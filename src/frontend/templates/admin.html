@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Admin-panel — Kuronami{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="section-title" style="font-size:2rem; margin-bottom: 1.5rem;">⚙️ Admin panel</h1>
+
+    <div class="admin-grid">
+
+        <a href="/admin/anime" class="admin-card">
+            <div class="admin-card-icon">🎬</div>
+            <div class="admin-card-title">Anime</div>
+            <div class="admin-card-desc">Create/Edit Anime</div>
+        </a>
+
+        <a href="/admin/news" class="admin-card">
+            <div class="admin-card-icon">📰</div>
+            <div class="admin-card-title">News</div>
+            <div class="admin-card-desc">Create/Edit News</div>
+        </a>
+
+        <a href="/admin/tools/adminer" class="admin-card" target="_blank">
+            <div class="admin-card-icon">🗄️</div>
+            <div class="admin-card-title">Adminer</div>
+            <div class="admin-card-desc">Database manager</div>
+        </a>
+
+        <a href="/admin/tools/portainer" class="admin-card" target="_blank">
+            <div class="admin-card-icon">🐳</div>
+            <div class="admin-card-title">Portainer</div>
+            <div class="admin-card-desc">Docker-containers manager</div>
+        </a>
+
+        <a href="/admin/tools/redisinsight" class="admin-card" target="_blank">
+            <div class="admin-card-icon">🔴</div>
+            <div class="admin-card-title">RedisInsight</div>
+            <div class="admin-card-desc">Redis manager</div>
+        </a>
+
+    </div>
+</div>
+{% endblock %}

@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     news_service: str = os.getenv("NEWS_SERVICE_ENDPOINT", "http://localhost:8001")
     recommends_service: str = os.getenv("RECOMMENDS_SERVICE_ENDPOINT", "http://localhost:8003")
 
+    adminer_endpoint: str = os.getenv("ADMINER_ENDPOINT", "http://192.168.3.160:9001")
+    redis_insight_endpoint: str = os.getenv("REDIS_INSIGHT_ENDPOINT", "http://192.168.3.160:9002")
+    portainer_endpoint: str = os.getenv("PORTAINER_ENDPOINT", "http://192.168.3.160:9003")
+
     auth_service: str = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost:8002")
     user_service: str = os.getenv("USER_SERVICE_ENDPOINT", "http://localhost:8002")
     comments_service: str = os.getenv("COMMENTS_SERVICE_ENDPOINT", "http://localhost:8002")

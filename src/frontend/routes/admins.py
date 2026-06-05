@@ -8,13 +8,20 @@ from starlette.responses import JSONResponse
 
 from src.frontend.services.auth_decorator import require_auth
 from src.frontend.services.s3_service import upload_image
+from src.frontend.config.settings import settings
+from src.frontend.schemas.users import RoleUser, RoleKey, RoleMODER, RoleADMIN
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
-ANIME_API_URL = "http://localhost:8001"
+ANIME_API_URL = settings.anime_service
 
+TOOLS = {
+    "adminer":      settings.adminer_endpoint,
+    "portainer":    settings.portainer_endpoint,
+    "redisinsight": settings.redis_insight_endpoint,
+}
 
 async def get_genres_list() -> List[tuple]:
     async with httpx.AsyncClient() as client:
@@ -56,10 +63,32 @@ async def get_anime_by_id(anime_id: int) -> Optional[dict]:
     return None
 
 
-@router.get("", response_class=HTMLResponse, name="admin")
-async def admin_redirect():
-    return RedirectResponse(url="/admin/anime", status_code=303)
 
+@router.get("", name="admin")
+@require_auth
+async def admin_page(request: Request, payload: dict = None):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
+        raise HTTPException(status_code=403)
+
+    return templates.TemplateResponse("admin.html", {
+        "request": request,
+        "active_page": "admin",
+        "is_authorized": True,
+        "is_admin": True,
+    })
+
+
+@router.get("/tools/{tool}")
+@require_auth
+async def admin_tool_redirect(request: Request, tool: str, payload: dict = None):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
+        raise HTTPException(status_code=403)
+
+    url = TOOLS.get(tool)
+    if not url:
+        raise HTTPException(status_code=404)
+
+    return RedirectResponse(url=url, status_code=302)
 
 @router.get("/anime", response_class=HTMLResponse)
 @require_auth
