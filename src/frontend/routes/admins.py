@@ -360,3 +360,230 @@ async def admin_anime_delete(
             return RedirectResponse(url="/admin/anime", status_code=303)
 
     return RedirectResponse(url="/admin/anime?error=Failed+to+delete+anime", status_code=303)
+
+
+async def get_news_by_id(news_id: int) -> Optional[dict]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{ANIME_API_URL}/news/{news_id}", timeout=10.0)
+        if response.status_code == 200:
+            return response.json()
+    return None
+
+
+@router.get("/news", response_class=HTMLResponse)
+@require_auth
+async def admin_news_list(
+        request: Request,
+        page: int = 1,
+        size: int = 20,
+        payload: dict = None
+):
+    if not payload or payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{ANIME_API_URL}/news/admin/list",
+            params={"page": page, "size": size},
+            timeout=10.0
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            news_list = data.get("items", [])
+            total = data.get("total", 0)
+            total_pages = data.get("pages", 0)
+        else:
+            news_list = []
+            total = 0
+            total_pages = 0
+
+    return templates.TemplateResponse("admin_news_list.html", {
+        "request": request,
+        "is_authorized": True,
+        "is_admin": True,
+        "news_list": news_list,
+        "total_pages": total_pages,
+        "current_page": page,
+        "title": "Manage News"
+    })
+
+
+@router.get("/news/create", response_class=HTMLResponse)
+@require_auth
+async def admin_news_create_form(
+        request: Request,
+        payload: dict = None
+):
+    if not payload or payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
+    return templates.TemplateResponse("admin_news_form.html", {
+        "request": request,
+        "is_authorized": True,
+        "is_admin": True,
+        "title": "Create News",
+        "news": None
+    })
+
+
+@router.post("/news/create", response_class=HTMLResponse)
+@require_auth
+async def admin_news_create(
+        request: Request,
+        title: str = Form(...),
+        slug: str = Form(...),
+        preview_text: str = Form(...),
+        full_content: str = Form(...),
+        is_published: str = Form("false"),
+        preview_image: Optional[UploadFile] = File(None),
+        full_image: Optional[UploadFile] = File(None),
+        payload: dict = None
+):
+    if not payload or payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
+    # Upload images to S3
+    preview_image_url = None
+    full_image_url = None
+
+    if preview_image and preview_image.filename:
+        try:
+            result = await upload_image(upload_type="news", file=preview_image)
+            preview_image_url = result["url"]
+        except Exception as e:
+            return RedirectResponse(url="/admin/news/create?error=Failed+to+upload+preview+image", status_code=303)
+
+    if full_image and full_image.filename:
+        try:
+            result = await upload_image(upload_type="news", file=full_image)
+            full_image_url = result["url"]
+        except Exception as e:
+            return RedirectResponse(url="/admin/news/create?error=Failed+to+upload+full+image", status_code=303)
+
+    data = {
+        "title": title,
+        "slug": slug,
+        "preview_text": preview_text,
+        "full_content": full_content,
+        "is_published": is_published.lower() == "true",
+        "preview_image_url": preview_image_url,
+        "full_image_url": full_image_url
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{ANIME_API_URL}/news/",
+            json=data,
+            timeout=10.0
+        )
+
+        if response.status_code == 201:
+            return RedirectResponse(url="/admin/news", status_code=303)
+
+    return RedirectResponse(url="/admin/news/create?error=Failed+to+create+news", status_code=303)
+
+
+@router.get("/news/{news_id}/edit", response_class=HTMLResponse)
+@require_auth
+async def admin_news_edit_form(
+        request: Request,
+        news_id: int,
+        payload: dict = None
+):
+    if not payload or payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
+    news = await get_news_by_id(news_id)
+    if not news:
+        raise HTTPException(status_code=404, detail="News not found")
+
+    return templates.TemplateResponse("admin_news_form.html", {
+        "request": request,
+        "is_authorized": True,
+        "is_admin": True,
+        "title": f"Edit News — {news.get('title', 'Untitled')}",
+        "news": news
+    })
+
+
+@router.post("/news/{news_id}/edit", response_class=HTMLResponse)
+@require_auth
+async def admin_news_edit(
+        request: Request,
+        news_id: int,
+        title: Optional[str] = Form(None),
+        slug: Optional[str] = Form(None),
+        preview_text: Optional[str] = Form(None),
+        full_content: Optional[str] = Form(None),
+        is_published: Optional[str] = Form(None),
+        preview_image: Optional[UploadFile] = File(None),
+        full_image: Optional[UploadFile] = File(None),
+        payload: dict = None
+):
+    if not payload or payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
+    data = {
+        "title": title,
+        "slug": slug,
+        "preview_text": preview_text,
+        "full_content": full_content,
+    }
+
+    if is_published is not None:
+        data["is_published"] = is_published.lower() == "true"
+
+    # Upload new images if provided
+    if preview_image and preview_image.filename:
+        try:
+            result = await upload_image(upload_type="news", file=preview_image)
+            data["preview_image_url"] = result["url"]
+        except Exception as e:
+            return RedirectResponse(url=f"/admin/news/{news_id}/edit?error=Failed+to+upload+preview+image",
+                                    status_code=303)
+
+    if full_image and full_image.filename:
+        try:
+            result = await upload_image(upload_type="news", file=full_image)
+            data["full_image_url"] = result["url"]
+        except Exception as e:
+            return RedirectResponse(url=f"/admin/news/{news_id}/edit?error=Failed+to+upload+full+image",
+                                    status_code=303)
+
+    # Remove None values
+    data = {k: v for k, v in data.items() if v is not None}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.put(
+            f"{ANIME_API_URL}/news/{news_id}",
+            json=data,
+            timeout=10.0
+        )
+
+        if response.status_code == 200:
+            return RedirectResponse(url="/admin/news", status_code=303)
+
+    return RedirectResponse(url=f"/admin/news/{news_id}/edit?error=Failed+to+update+news", status_code=303)
+
+
+@router.post("/news/{news_id}/delete", response_class=HTMLResponse)
+@require_auth
+async def admin_news_delete(
+        request: Request,
+        news_id: int,
+        payload: dict = None
+):
+    if not payload or payload['role'] not in ("admin", "moder"):
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(
+            f"{ANIME_API_URL}/news/{news_id}",
+            timeout=10.0
+        )
+
+        if response.status_code == 204:
+            return RedirectResponse(url="/admin/news", status_code=303)
+
+    return RedirectResponse(url="/admin/news?error=Failed+to+delete+news", status_code=303)

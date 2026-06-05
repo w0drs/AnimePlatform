@@ -36,6 +36,7 @@ app.include_router(search.router)
 app.include_router(news.router)
 app.include_router(popular.router)
 
+
 @app.get("/")
 async def root():
     return {"message": "Anime API", "version": "1.0.0"}

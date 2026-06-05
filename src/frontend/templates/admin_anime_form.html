@@ -29,11 +29,12 @@
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
                             <div class="filter-group">
                                 <label>Title (English) *</label>
-                                <input type="text" name="title_english" value="{{ anime.title_english if anime else '' }}" required>
+                                <input type="text" name="title_english" id="title_english" value="{{ anime.title_english if anime else '' }}" required>
+                                <div class="error-msg" id="title_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
                             </div>
                             <div class="filter-group">
                                 <label>Type</label>
-                                <select name="type">
+                                <select name="type" id="type">
                                     <option value="">-- Select --</option>
                                     <option value="TV" {% if anime and anime.type == 'TV' %}selected{% endif %}>TV</option>
                                     <option value="Movie" {% if anime and anime.type == 'Movie' %}selected{% endif %}>Movie</option>
@@ -45,15 +46,17 @@
                             </div>
                             <div class="filter-group">
                                 <label>Episodes</label>
-                                <input type="number" name="episodes" value="{{ anime.episodes if anime and anime.episodes else '' }}" min="0">
+                                <input type="number" name="episodes" id="episodes" value="{{ anime.episodes if anime and anime.episodes else '' }}" min="0" step="1">
+                                <div class="error-msg" id="episodes_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
                             </div>
                             <div class="filter-group">
                                 <label>Duration</label>
-                                <input type="text" name="duration" value="{{ anime.duration if anime else '' }}" placeholder="e.g., 24 min per ep">
+                                <input type="text" name="duration" id="duration" value="{{ anime.duration if anime else '' }}" placeholder="e.g., 24 min per ep">
+                                <div class="error-msg" id="duration_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
                             </div>
                             <div class="filter-group">
                                 <label>Rating (Age)</label>
-                                <select name="rating">
+                                <select name="rating" id="rating">
                                     <option value="">-- Select --</option>
                                     <option value="G - All Ages" {% if anime and anime.rating == 'G - All Ages' %}selected{% endif %}>G — All Ages</option>
                                     <option value="PG - Children" {% if anime and anime.rating == 'PG - Children' %}selected{% endif %}>PG — Children</option>
@@ -65,7 +68,8 @@
                             </div>
                             <div class="filter-group">
                                 <label>Year</label>
-                                <input type="number" name="year" value="{{ anime.year if anime and anime.year else '' }}" min="1900" max="2026">
+                                <input type="number" name="year" id="year" value="{{ anime.year if anime and anime.year else '' }}" min="1900" max="2026" step="1">
+                                <div class="error-msg" id="year_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -82,13 +86,14 @@
                                     <p style="font-size: 0.75rem; color: #666;">Current poster</p>
                                 </div>
                                 {% endif %}
-                                <input type="file" name="poster_image" accept="image/jpeg,image/png,image/webp">
-                                <input type="hidden" name="image_webp_large_url" value="{{ anime.image_webp_large_url if anime else '' }}">
-                                <p style="font-size: 0.7rem; color: #999; margin-top: 0.25rem;">Leave empty to keep current image</p>
+                                <input type="file" name="poster_image" id="poster_image" accept="image/jpeg,image/png,image/webp,image/jpg">
+                                <div class="error-msg" id="poster_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
+                                <p style="font-size: 0.7rem; color: #999; margin-top: 0.25rem;">Max 5MB. Allowed: JPEG, PNG, WEBP. Leave empty to keep current image.</p>
                             </div>
                             <div class="filter-group">
                                 <label>Trailer URL (YouTube)</label>
-                                <input type="url" name="trailer_url" value="{{ anime.trailer_url if anime else '' }}" placeholder="https://www.youtube.com/watch?v=...">
+                                <input type="url" name="trailer_url" id="trailer_url" value="{{ anime.trailer_url if anime else '' }}" placeholder="https://www.youtube.com/watch?v=...">
+                                <div class="error-msg" id="trailer_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -157,17 +162,18 @@
                         <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Description</h3>
                         <div class="filter-group">
                             <label>Synopsis</label>
-                            <textarea name="synopsis" rows="8" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit;">{{ anime.synopsis if anime else '' }}</textarea>
+                            <textarea name="synopsis" id="synopsis" rows="8" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit;">{{ anime.synopsis if anime else '' }}</textarea>
+                            <div class="error-msg" id="synopsis_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
                         </div>
                         <div class="filter-group">
                             <label>Background (Optional)</label>
-                            <textarea name="background" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit;">{{ anime.background if anime else '' }}</textarea>
+                            <textarea name="background" id="background" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit;">{{ anime.background if anime else '' }}</textarea>
                         </div>
                     </div>
 
                     <!-- Buttons -->
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button type="submit" class="btn-filter" style="background: var(--accent-darker);">💾 Save</button>
+                        <button type="submit" id="submit-btn" class="btn-filter" style="background: var(--accent-darker);">💾 Save</button>
                         <a href="/admin/anime" class="btn-filter-reset" style="text-decoration: none;">Cancel</a>
                     </div>
                 </form>
@@ -265,8 +271,233 @@ document.addEventListener('click', function(e) {
     }
 });
 
-document.getElementById('anime-form').addEventListener('submit', function() {
-    studiosHidden.value = selectedStudios.join(',');
+// ============= ВАЛИДАЦИЯ ФОРМЫ =============
+
+function validateTitle() {
+    const title = document.getElementById('title_english');
+    const error = document.getElementById('title_error');
+    const value = title.value.trim();
+
+    if (!value) {
+        error.textContent = 'Title is required';
+        error.style.display = 'block';
+        title.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length < 2) {
+        error.textContent = 'Title must be at least 2 characters';
+        error.style.display = 'block';
+        title.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length > 255) {
+        error.textContent = 'Title must be less than 255 characters';
+        error.style.display = 'block';
+        title.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    title.style.borderColor = '';
+    return true;
+}
+
+function validateEpisodes() {
+    const episodes = document.getElementById('episodes');
+    const error = document.getElementById('episodes_error');
+    const value = episodes.value;
+
+    if (value === '') {
+        error.style.display = 'none';
+        episodes.style.borderColor = '';
+        return true;
+    }
+
+    const num = parseInt(value);
+    if (isNaN(num) || num < 0) {
+        error.textContent = 'Episodes must be a positive number';
+        error.style.display = 'block';
+        episodes.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (num > 10000) {
+        error.textContent = 'Episodes cannot exceed 10000';
+        error.style.display = 'block';
+        episodes.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    episodes.style.borderColor = '';
+    return true;
+}
+
+function validateYear() {
+    const year = document.getElementById('year');
+    const error = document.getElementById('year_error');
+    const value = year.value;
+
+    if (value === '') {
+        error.style.display = 'none';
+        year.style.borderColor = '';
+        return true;
+    }
+
+    const num = parseInt(value);
+    const currentYear = new Date().getFullYear();
+
+    if (isNaN(num)) {
+        error.textContent = 'Please enter a valid year';
+        error.style.display = 'block';
+        year.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (num < 1900) {
+        error.textContent = 'Year must be 1900 or later';
+        error.style.display = 'block';
+        year.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (num > currentYear + 5) {
+        error.textContent = `Year cannot be more than ${currentYear + 5}`;
+        error.style.display = 'block';
+        year.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    year.style.borderColor = '';
+    return true;
+}
+
+function validateDuration() {
+    const duration = document.getElementById('duration');
+    const error = document.getElementById('duration_error');
+    const value = duration.value.trim();
+
+    if (value === '') {
+        error.style.display = 'none';
+        duration.style.borderColor = '';
+        return true;
+    }
+
+    // Проверка формата: цифры + текст + возможно "per ep"
+    const pattern = /^(\d+\s*(min|hour|hr|秒|分|分鐘|분|часа|час|ч|дней|дня|день|day|days|ep|эп|episode|episodes))\s*(\/?\s*(per ep|еп|эпизод|эпизода|за эпизод)?)?$/i;
+    if (!pattern.test(value) && !/^\d+\s*min(\s*per\s*ep)?$/i.test(value)) {
+        error.textContent = 'Format examples: "24 min", "1 hour 30 min", "24 min per ep"';
+        error.style.display = 'block';
+        duration.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    duration.style.borderColor = '';
+    return true;
+}
+
+function validateTrailerUrl() {
+    const trailer = document.getElementById('trailer_url');
+    const error = document.getElementById('trailer_error');
+    const value = trailer.value.trim();
+
+    if (value === '') {
+        error.style.display = 'none';
+        trailer.style.borderColor = '';
+        return true;
+    }
+
+    // Проверка YouTube URL
+    const youtubePattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})(\S*)?$/;
+    if (!youtubePattern.test(value)) {
+        error.textContent = 'Please enter a valid YouTube URL';
+        error.style.display = 'block';
+        trailer.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    trailer.style.borderColor = '';
+    return true;
+}
+
+function validateSynopsis() {
+    const synopsis = document.getElementById('synopsis');
+    const error = document.getElementById('synopsis_error');
+    const value = synopsis.value.trim();
+
+    if (value === '') {
+        error.textContent = 'Synopsis is required';
+        error.style.display = 'block';
+        synopsis.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length < 50) {
+        error.textContent = 'Synopsis must be at least 50 characters';
+        error.style.display = 'block';
+        synopsis.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length > 10000) {
+        error.textContent = 'Synopsis must be less than 10000 characters';
+        error.style.display = 'block';
+        synopsis.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    synopsis.style.borderColor = '';
+    return true;
+}
+
+function validatePosterImage() {
+    const poster = document.getElementById('poster_image');
+    const error = document.getElementById('poster_error');
+    const file = poster.files[0];
+
+    if (!file) {
+        error.style.display = 'none';
+        return true; // Не обязательное поле
+    }
+
+    // Проверка размера (макс 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        error.textContent = 'Image size must be less than 5MB';
+        error.style.display = 'block';
+        return false;
+    }
+
+    // Проверка типа
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+        error.textContent = 'Only JPEG, PNG, WEBP images are allowed';
+        error.style.display = 'block';
+        return false;
+    }
+
+    error.style.display = 'none';
+    return true;
+}
+
+// Real-time валидация при вводе
+document.getElementById('title_english').addEventListener('input', validateTitle);
+document.getElementById('episodes').addEventListener('input', validateEpisodes);
+document.getElementById('year').addEventListener('input', validateYear);
+document.getElementById('duration').addEventListener('input', validateDuration);
+document.getElementById('trailer_url').addEventListener('input', validateTrailerUrl);
+document.getElementById('synopsis').addEventListener('input', validateSynopsis);
+document.getElementById('poster_image').addEventListener('change', validatePosterImage);
+
+// Валидация перед отправкой формы
+document.getElementById('anime-form').addEventListener('submit', function(e) {
+    const isValid = validateTitle() && validateEpisodes() && validateYear() &&
+                    validateDuration() && validateTrailerUrl() && validateSynopsis() &&
+                    validatePosterImage();
+
+    if (!isValid) {
+        e.preventDefault();
+        // Скроллим к первой ошибке
+        const firstError = document.querySelector('.error-msg[style*="display: block"]');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else {
+        studiosHidden.value = selectedStudios.join(',');
+    }
 });
 
 initSelectedStudios();

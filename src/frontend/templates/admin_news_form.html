@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Kuronami{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="anime-page" style="max-width: 1000px; margin: 0 auto;">
+        <div class="anime-main" style="padding: 2rem;">
+            <div style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h1 class="anime-title-main" style="margin-bottom: 0;">{{ title }}</h1>
+                    {% if news and news.id %}
+                    <button id="delete-btn" class="btn-filter" style="background: #dc2626; color: white;" onclick="openDeleteModal()">
+                        🗑️ Delete
+                    </button>
+                    {% endif %}
+                </div>
+
+                {% if error %}
+                <div style="background: #fee; color: #c00; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post" id="news-form" enctype="multipart/form-data">
+                    <!-- Basic Info -->
+                    <div class="section-block" style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Basic Information</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="filter-group">
+                                <label>Title *</label>
+                                <input type="text" name="title" id="title" value="{{ news.title if news else '' }}" required>
+                                <div class="error-msg" id="title_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
+                            </div>
+                            <div class="filter-group">
+                                <label>Slug (URL identifier) *</label>
+                                <input type="text" name="slug" id="slug" value="{{ news.slug if news else '' }}" required>
+                                <div class="error-msg" id="slug_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
+                                <p style="font-size: 0.7rem; color: #999;">Example: "new-anime-announcement"</p>
+                            </div>
+                            <div class="filter-group">
+                                <label>Status</label>
+                                <select name="is_published" id="is_published">
+                                    <option value="true" {% if news and news.is_published %}selected{% endif %}>Published</option>
+                                    <option value="false" {% if news and not news.is_published %}selected{% endif %}>Draft</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Images -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Images</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="filter-group">
+                                <label>Preview Image (Small)</label>
+                                {% if news and news.preview_image_url %}
+                                <div style="margin-bottom: 0.5rem;">
+                                    <img src="{{ news.preview_image_url }}" alt="Current preview" style="width: 100px; border-radius: 8px;">
+                                    <p style="font-size: 0.75rem; color: #666;">Current preview</p>
+                                </div>
+                                {% endif %}
+                                <input type="file" name="preview_image" id="preview_image" accept="image/jpeg,image/png,image/webp">
+                                <div class="error-msg" id="preview_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
+                                <p style="font-size: 0.7rem; color: #999;">Max 5MB. Allowed: JPEG, PNG, WEBP. Used in news listing.</p>
+                            </div>
+                            <div class="filter-group">
+                                <label>Full Image (Large)</label>
+                                {% if news and news.full_image_url %}
+                                <div style="margin-bottom: 0.5rem;">
+                                    <img src="{{ news.full_image_url }}" alt="Current full image" style="width: 100px; border-radius: 8px;">
+                                    <p style="font-size: 0.75rem; color: #666;">Current full image</p>
+                                </div>
+                                {% endif %}
+                                <input type="file" name="full_image" id="full_image" accept="image/jpeg,image/png,image/webp">
+                                <div class="error-msg" id="full_image_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
+                                <p style="font-size: 0.7rem; color: #999;">Max 5MB. Allowed: JPEG, PNG, WEBP. Used in news detail page header.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="section-block">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Content</h3>
+                        <div class="filter-group">
+                            <label>Preview Text (Short description) *</label>
+                            <textarea name="preview_text" id="preview_text" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit;" required>{{ news.preview_text if news else '' }}</textarea>
+                            <div class="error-msg" id="preview_text_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
+                            <p style="font-size: 0.7rem; color: #999;">Displayed in news listing. Recommended: 150-300 characters.</p>
+                        </div>
+                        <div class="filter-group">
+                            <label>Full Content (HTML supported) *</label>
+                            <textarea name="full_content" id="full_content" rows="12" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-family: monospace;" required>{{ news.full_content if news else '' }}</textarea>
+                            <div class="error-msg" id="full_content_error" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; display: none;"></div>
+                            <p style="font-size: 0.7rem; color: #999;">HTML tags allowed: &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;a&gt;</p>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button type="submit" id="submit-btn" class="btn-filter" style="background: var(--accent-darker);">💾 Save</button>
+                        <a href="/admin/news" class="btn-filter-reset" style="text-decoration: none;">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal modal--confirm">
+        <div class="modal-header">
+            <div class="modal-title">Delete News</div>
+            <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-confirm-text">Are you sure you want to delete <strong>"{{ news.title if news else '' }}"</strong>?</p>
+            <p class="modal-confirm-text" style="color: #dc2626; font-size: 0.85rem;">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn--secondary" onclick="closeDeleteModal()">Cancel</button>
+            <form method="post" action="/admin/news/{{ news.id }}/delete" style="display: inline;">
+                <button type="submit" class="modal-btn modal-btn--danger">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Slug auto-generation from title
+let isSlugManuallyEdited = false;
+
+document.getElementById('title').addEventListener('input', function() {
+    if (!isSlugManuallyEdited) {
+        const title = this.value;
+        const slug = title.toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
+            .trim();
+        document.getElementById('slug').value = slug;
+    }
+});
+
+document.getElementById('slug').addEventListener('input', function() {
+    isSlugManuallyEdited = true;
+});
+
+// ============= ВАЛИДАЦИЯ ФОРМЫ =============
+
+function validateTitle() {
+    const title = document.getElementById('title');
+    const error = document.getElementById('title_error');
+    const value = title.value.trim();
+    
+    if (!value) {
+        error.textContent = 'Title is required';
+        error.style.display = 'block';
+        title.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length < 3) {
+        error.textContent = 'Title must be at least 3 characters';
+        error.style.display = 'block';
+        title.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length > 255) {
+        error.textContent = 'Title must be less than 255 characters';
+        error.style.display = 'block';
+        title.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    title.style.borderColor = '';
+    return true;
+}
+
+function validateSlug() {
+    const slug = document.getElementById('slug');
+    const error = document.getElementById('slug_error');
+    const value = slug.value.trim();
+    
+    if (!value) {
+        error.textContent = 'Slug is required';
+        error.style.display = 'block';
+        slug.style.borderColor = '#dc2626';
+        return false;
+    }
+    const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (!slugPattern.test(value)) {
+        error.textContent = 'Slug must contain only lowercase letters, numbers and hyphens';
+        error.style.display = 'block';
+        slug.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    slug.style.borderColor = '';
+    return true;
+}
+
+function validatePreviewText() {
+    const preview = document.getElementById('preview_text');
+    const error = document.getElementById('preview_text_error');
+    const value = preview.value.trim();
+    
+    if (!value) {
+        error.textContent = 'Preview text is required';
+        error.style.display = 'block';
+        preview.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length < 50) {
+        error.textContent = 'Preview text must be at least 50 characters';
+        error.style.display = 'block';
+        preview.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length > 500) {
+        error.textContent = 'Preview text must be less than 500 characters';
+        error.style.display = 'block';
+        preview.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    preview.style.borderColor = '';
+    return true;
+}
+
+function validateFullContent() {
+    const content = document.getElementById('full_content');
+    const error = document.getElementById('full_content_error');
+    const value = content.value.trim();
+    
+    if (!value) {
+        error.textContent = 'Full content is required';
+        error.style.display = 'block';
+        content.style.borderColor = '#dc2626';
+        return false;
+    }
+    if (value.length < 100) {
+        error.textContent = 'Full content must be at least 100 characters';
+        error.style.display = 'block';
+        content.style.borderColor = '#dc2626';
+        return false;
+    }
+    error.style.display = 'none';
+    content.style.borderColor = '';
+    return true;
+}
+
+function validatePreviewImage() {
+    const image = document.getElementById('preview_image');
+    const error = document.getElementById('preview_error');
+    const file = image.files[0];
+    
+    if (!file) {
+        error.style.display = 'none';
+        return true;
+    }
+    
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        error.textContent = 'Image size must be less than 5MB';
+        error.style.display = 'block';
+        return false;
+    }
+    
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        error.textContent = 'Only JPEG, PNG, WEBP images are allowed';
+        error.style.display = 'block';
+        return false;
+    }
+    
+    error.style.display = 'none';
+    return true;
+}
+
+function validateFullImage() {
+    const image = document.getElementById('full_image');
+    const error = document.getElementById('full_image_error');
+    const file = image.files[0];
+    
+    if (!file) {
+        error.style.display = 'none';
+        return true;
+    }
+    
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        error.textContent = 'Image size must be less than 5MB';
+        error.style.display = 'block';
+        return false;
+    }
+    
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        error.textContent = 'Only JPEG, PNG, WEBP images are allowed';
+        error.style.display = 'block';
+        return false;
+    }
+    
+    error.style.display = 'none';
+    return true;
+}
+
+// Real-time validation
+document.getElementById('title').addEventListener('input', validateTitle);
+document.getElementById('slug').addEventListener('input', validateSlug);
+document.getElementById('preview_text').addEventListener('input', validatePreviewText);
+document.getElementById('full_content').addEventListener('input', validateFullContent);
+document.getElementById('preview_image').addEventListener('change', validatePreviewImage);
+document.getElementById('full_image').addEventListener('change', validateFullImage);
+
+// Form submission validation
+document.getElementById('news-form').addEventListener('submit', function(e) {
+    const isValid = validateTitle() && validateSlug() && validatePreviewText() && 
+                    validateFullContent() && validatePreviewImage() && validateFullImage();
+    
+    if (!isValid) {
+        e.preventDefault();
+        const firstError = document.querySelector('.error-msg[style*="display: block"]');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+});
+
+function openDeleteModal() {
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+}
+</script>
+{% endblock %}

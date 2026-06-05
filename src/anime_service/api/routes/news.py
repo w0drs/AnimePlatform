@@ -101,3 +101,23 @@ async def delete_news(
     deleted = NewsRepository.delete(news_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="News not found")
+
+
+@router.get("/admin/list", response_model=NewsListResponse)
+async def get_all_news_admin(
+        page: int = Query(1, ge=1),
+        size: int = Query(20, ge=1, le=100),
+        user: dict = Depends(require_moder_or_admin)
+):
+    """Получить список всех новостей для админки (включая неопубликованные)"""
+    offset = (page - 1) * size
+    items = NewsRepository.get_all(limit=size, offset=offset, only_published=False)
+    total = NewsRepository.count(only_published=False)
+
+    return NewsListResponse(
+        items=[NewsPreviewResponse(**item) for item in items],
+        total=total,
+        page=page,
+        size=size,
+        pages=(total + size - 1) // size
+    )

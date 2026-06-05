@@ -152,3 +152,5 @@ class NewsRepository:
                 RETURNING id
             """, (is_published, news_id))
             return cur.fetchone() is not None
+
+
