@@ -58,7 +58,6 @@ class NewsRepository:
     def create(data: Dict) -> int:
         """Создать новую новость"""
         with db.get_cursor() as cur:
-            # Вставляем превью
             cur.execute("""
                 INSERT INTO news_preview (title, slug, preview_text, preview_image_url, is_published)
                 VALUES (%(title)s, %(slug)s, %(preview_text)s, %(preview_image_url)s, %(is_published)s)
@@ -66,11 +65,11 @@ class NewsRepository:
             """, data)
             news_id = cur.fetchone()['id']
 
-            # Вставляем полное содержание
             cur.execute("""
                 INSERT INTO news_content (news_id, full_content, full_image_url)
-                VALUES (%s, %(full_content)s, %(full_image_url)s)
-            """, (news_id, data))
+                VALUES (%(news_id)s, %(full_content)s, %(full_image_url)s)
+            """, {"news_id": news_id, "full_content": data.get("full_content"),
+                  "full_image_url": data.get("full_image_url")})
 
             return news_id
 
