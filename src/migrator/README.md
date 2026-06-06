@@ -5,9 +5,9 @@ Migration Tool - это часть проекта для автоматичес�
 
 ## Утилита ищет все переменные окружения, содержащие подстроку DSN. Рекомендуемый формат:
 ```bash
-export USERS_DATABASE_DSN="postgresql://user:password@host:5432/dbname?sslmode=disable"
-export NEWS_POSTGRES_DSN="postgresql://user:password@host:5432/dbname?sslmode=disable"
-export PG_DSN="postgresql://user:password@host:5432/dbname?sslmode=disable"
+export USERS_DATABASE_DSN="postgresql://user1:password@localhost:5432/users_db?sslmode=disable"
+export NEWS_POSTGRES_DSN="postgresql://user2:password@192.168.1.10:5432/news_db?sslmode=disable"
+export PG_DSN="postgresql://user3:password@192.168.3.160:5432/pg_db?sslmode=disable"
 ```
 
 ## Миграции находятся по пути migrator/migration/migrations в .sql формате
