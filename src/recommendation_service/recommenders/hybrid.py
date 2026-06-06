@@ -22,6 +22,19 @@ def safe_set(value):
     return {value} if value else set()
 
 
+def safe_list(x):
+    """Безопасно преобразует значение в список"""
+    if x is None:
+        return []
+    if isinstance(x, float):
+        return []
+    if isinstance(x, (list, tuple)):
+        return list(x)
+    if hasattr(x, 'tolist'):
+        return x.tolist()
+    return [x] if x else []
+
+
 class HybridRecommender:
     """
     Гибридный рекомендер аниме на основе:
@@ -71,28 +84,28 @@ class HybridRecommender:
 
         # Загружаем жанры для каждого аниме
         genres_df = pd.read_sql("""
-            SELECT a.id, array_agg(g.name) as genres
+            SELECT a.id, COALESCE(array_agg(g.name), ARRAY[]::text[]) as genres
             FROM anime a
-            JOIN anime_genres ag ON a.id = ag.anime_id
-            JOIN genres g ON ag.genre_id = g.id
+            LEFT JOIN anime_genres ag ON a.id = ag.anime_id
+            LEFT JOIN genres g ON ag.genre_id = g.id
             GROUP BY a.id
         """, conn)
 
         # Загружаем темы
         themes_df = pd.read_sql("""
-            SELECT a.id, array_agg(t.name) as themes
+            SELECT a.id, COALESCE(array_agg(t.name), ARRAY[]::text[]) as themes
             FROM anime a
-            JOIN anime_themes at ON a.id = at.anime_id
-            JOIN themes t ON at.theme_id = t.id
+            LEFT JOIN anime_themes at ON a.id = at.anime_id
+            LEFT JOIN themes t ON at.theme_id = t.id
             GROUP BY a.id
         """, conn)
 
         # Загружаем демографику
         demo_df = pd.read_sql("""
-            SELECT a.id, array_agg(d.name) as demographics
+            SELECT a.id, COALESCE(array_agg(d.name), ARRAY[]::text[]) as demographics
             FROM anime a
-            JOIN anime_demographics ad ON a.id = ad.anime_id
-            JOIN demographics d ON ad.demographic_id = d.id
+            LEFT JOIN anime_demographics ad ON a.id = ad.anime_id
+            LEFT JOIN demographics d ON ad.demographic_id = d.id
             GROUP BY a.id
         """, conn)
 
@@ -103,10 +116,10 @@ class HybridRecommender:
         df = df.merge(themes_df, on='id', how='left')
         df = df.merge(demo_df, on='id', how='left')
 
-        # Заполняем NULL пустыми списками и преобразуем в list
-        df['genres'] = df['genres'].apply(lambda x: list(x) if x is not None else [])
-        df['themes'] = df['themes'].apply(lambda x: list(x) if x is not None else [])
-        df['demographics'] = df['demographics'].apply(lambda x: list(x) if x is not None else [])
+        # Заполняем NULL пустыми списками
+        df['genres'] = df['genres'].apply(safe_list)
+        df['themes'] = df['themes'].apply(safe_list)
+        df['demographics'] = df['demographics'].apply(safe_list)
 
         # Генерируем эмбеддинги
         embeddings = []
