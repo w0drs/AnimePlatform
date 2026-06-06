@@ -9,7 +9,7 @@ from src.recommendation_service.models.schemas import (
     RecommendationResponse, AnimeRecommendation,
     SimilarByIdResponse
 )
-from src.recommendation_service.recommenders.content_based import LanceRecommender
+from src.recommendation_service.recommenders.hybrid import HybridRecommender
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,20 +18,28 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Глобальные переменные
-content_recommender: LanceRecommender | None = None
+hybrid_recommender: HybridRecommender | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Управление жизненным циклом приложения"""
-    global content_recommender
+    global hybrid_recommender
 
-    logger.info("Загрузка content-based рекомендера...")
-    content_recommender = LanceRecommender()
+    logger.info("Загрузка гибридного рекомендера...")
+    hybrid_recommender = HybridRecommender()
 
     try:
-        content_recommender.table = content_recommender.db.open_table(content_recommender.table_name)
-        logger.info(f"LanceDB загружен: {content_recommender.table_name}")
+        hybrid_recommender.table = hybrid_recommender.db.open_table(hybrid_recommender.table_name)
+        logger.info(f"LanceDB загружен: {hybrid_recommender.table_name}")
+
+        # Настройка весов (можно менять)
+        hybrid_recommender.update_weights(
+            text_weight=1.0,
+            genre_weight=1.0,
+            theme_weight=0.8,
+            demographic_weight=0.5
+        )
     except Exception as e:
         logger.warning(f"Таблица не найдена: {e}")
 
@@ -42,8 +50,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Anime Recommendation API",
-    description="Content-based рекомендации аниме на LanceDB",
-    version="1.0.0",
+    description="Гибридные рекомендации аниме (текст + жанры + темы + демографика)",
+    version="2.0.0",
     lifespan=lifespan
 )
 
@@ -66,11 +74,11 @@ async def recommend_by_text(
 ):
     start_time = time.time()
 
-    if content_recommender is None or content_recommender.table is None:
-        raise HTTPException(status_code=503, detail="Content recommender not loaded")
+    if hybrid_recommender is None or hybrid_recommender.table is None:
+        raise HTTPException(status_code=503, detail="Recommender not loaded")
 
     try:
-        results = content_recommender.find_similar(q, limit=limit, min_score=min_score)
+        results = hybrid_recommender.find_similar_by_text(q, limit=limit, min_score=min_score)
     except Exception as e:
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=f"Search error: {str(e)}")
@@ -87,15 +95,37 @@ async def recommend_by_text(
 @app.get("/recommend/anime/{anime_id}", response_model=SimilarByIdResponse)
 async def recommend_by_anime_id(
         anime_id: int,
-        limit: int = Query(10, ge=1, le=50)
+        limit: int = Query(10, ge=1, le=50),
+        min_score: float = Query(0.5, ge=0, le=4),
+        text_weight: float = Query(1.0, ge=0, le=2),
+        genre_weight: float = Query(1.0, ge=0, le=2),
+        theme_weight: float = Query(0.8, ge=0, le=2),
+        demo_weight: float = Query(0.5, ge=0, le=2)
 ):
+    """
+    Гибридные рекомендации на основе:
+    - Похожести описаний
+    - Совпадения жанров
+    - Совпадения тем
+    - Совпадения демографики
+
+    Также учитывается возрастной рейтинг (не рекомендуются более высокие рейтинги)
+    """
     start_time = time.time()
 
-    if content_recommender is None or content_recommender.table is None:
-        raise HTTPException(status_code=503, detail="Content recommender not loaded")
+    if hybrid_recommender is None or hybrid_recommender.table is None:
+        raise HTTPException(status_code=503, detail="Recommender not loaded")
+
+    # Обновляем веса для этого запроса
+    hybrid_recommender.update_weights(
+        text_weight=text_weight,
+        genre_weight=genre_weight,
+        theme_weight=theme_weight,
+        demographic_weight=demo_weight
+    )
 
     try:
-        results = content_recommender.recommend_by_id(anime_id, limit=limit)
+        results = hybrid_recommender.find_similar_by_id(anime_id, limit=limit, min_score=min_score)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -111,18 +141,25 @@ async def recommend_by_anime_id(
     )
 
 
+@app.get("/weights")
+async def get_weights():
+    """Получить текущие веса компонентов"""
+    if hybrid_recommender is None:
+        raise HTTPException(status_code=503, detail="Recommender not loaded")
+
+    return hybrid_recommender.weights
+
+
 @app.get("/recommend/collaborative/{user_id}")
 async def get_collaborative_recommendations(
         user_id: str,
         limit: int = Query(10, ge=1, le=50)
 ):
-    """Получить коллаборативные рекомендации из БД"""
-
+    """Получить коллаборативные рекомендации из БД (сгенерированные офлайн)"""
     try:
         conn = psycopg2.connect(**settings.pg_params)
         cur = conn.cursor()
 
-        # Получаем последние рекомендации для пользователя
         cur.execute("""
             SELECT cr.anime_id, a.title_english
             FROM collaborative_recommendations cr
@@ -175,7 +212,6 @@ async def collaborative_status():
         cur.close()
         conn.close()
 
-        # Проверяем, что есть данные
         if not row or row[0] is None or row[0] == 0:
             return {
                 "status": "no_data",
