@@ -34,7 +34,7 @@ async def main(
 
     user_id = payload.get("user_id", "")
     data = await main_service.get_main_page_data(user_id)
-    print(data["popular"])
+    print(data["news"])
     return templates.TemplateResponse("main.html", {
         "request": request,
         "active_page": "home",
@@ -42,7 +42,7 @@ async def main(
         "is_admin": is_admin,
         "recommended": data["recommended"],
         "popular": data["popular"],
-        "news": data["news"],
+        "news_items": data["news"],
     }
 )
 

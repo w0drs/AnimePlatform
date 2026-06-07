@@ -1,0 +1,15 @@
+ROM python:3.11-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y \
+	gcc \
+	g++ \
+	libpq-dev \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY src/recommendation_service/ ./src/recommendation_service/
+
+RUN mkdir -p /app/src/recommendation_service/lancedb
+EXPOSE 8003
+CMD ["uvicorn", "src.recommendation_service.main:app", "--host", "0.0.0.0" , "--port", "8003"]

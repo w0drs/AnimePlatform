@@ -16,7 +16,7 @@ class MainService:
             return []
         try:
             response = await self.client.get(
-                f"{settings.anime_service}/recommend/collaborative/{user_id}",
+                f"{settings.recommends_service}/recommend/collaborative/{user_id}",
             )
         except httpx.RequestError:
             return []
