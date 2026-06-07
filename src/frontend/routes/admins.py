@@ -100,7 +100,7 @@ async def admin_anime_list(
 ):
     if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
-    if payload['role'] not in ("admin", "moder"):
+    if payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     async with httpx.AsyncClient() as client:
@@ -139,7 +139,7 @@ async def admin_anime_create_form(
 ):
     if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
-    if payload['role'] not in ("admin", "moder"):
+    if payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     genres_list = await get_genres_list()
@@ -183,7 +183,7 @@ async def admin_anime_create(
     """Создание аниме с загрузкой изображения"""
     if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
-    if payload['role'] not in ("admin", "moder"):
+    if payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     # Загружаем изображение на S3 если оно есть
@@ -241,7 +241,7 @@ async def admin_anime_edit_form(
 ):
     if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
-    if payload['role'] not in ("admin", "moder"):
+    if payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     anime = await get_anime_by_id(anime_id)
@@ -290,7 +290,7 @@ async def admin_anime_edit(
     """Обновление аниме с возможностью загрузки нового изображения"""
     if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
-    if payload['role'] not in ("admin", "moder"):
+    if payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     # Загружаем новое изображение если оно есть
@@ -347,7 +347,7 @@ async def admin_anime_delete(
 ):
     if not payload:
         return JSONResponse({"success": False, "error": "unauthorized"}, status_code=401)
-    if payload['role'] not in ("admin", "moder"):
+    if payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     async with httpx.AsyncClient() as client:
@@ -378,12 +378,12 @@ async def admin_news_list(
         size: int = 20,
         payload: dict = None
 ):
-    if not payload or payload['role'] not in ("admin", "moder"):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{ANIME_API_URL}/news/admin/list",
+            f"{ANIME_API_URL}/news/",
             params={"page": page, "size": size},
             timeout=10.0
         )
@@ -415,7 +415,7 @@ async def admin_news_create_form(
         request: Request,
         payload: dict = None
 ):
-    if not payload or payload['role'] not in ("admin", "moder"):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     return templates.TemplateResponse("admin_news_form.html", {
@@ -440,7 +440,7 @@ async def admin_news_create(
         full_image: Optional[UploadFile] = File(None),
         payload: dict = None
 ):
-    if not payload or payload['role'] not in ("admin", "moder"):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     # Upload images to S3
@@ -474,10 +474,11 @@ async def admin_news_create(
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{ANIME_API_URL}/news/",
+            headers={"Authorization": f"Bearer {request.cookies.get('access_token')}"},
             json=data,
             timeout=10.0
         )
-
+        print(response.status_code)
         if response.status_code == 201:
             return RedirectResponse(url="/admin/news", status_code=303)
 
@@ -491,7 +492,7 @@ async def admin_news_edit_form(
         news_id: int,
         payload: dict = None
 ):
-    if not payload or payload['role'] not in ("admin", "moder"):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     news = await get_news_by_id(news_id)
@@ -517,11 +518,11 @@ async def admin_news_edit(
         preview_text: Optional[str] = Form(None),
         full_content: Optional[str] = Form(None),
         is_published: Optional[str] = Form(None),
-        preview_image: Optional[UploadFile] = File(None),
-        full_image: Optional[UploadFile] = File(None),
+        preview_image_url: Optional[UploadFile] = File(None),
+        full_image_url: Optional[UploadFile] = File(None),
         payload: dict = None
 ):
-    if not payload or payload['role'] not in ("admin", "moder"):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     data = {
@@ -535,17 +536,17 @@ async def admin_news_edit(
         data["is_published"] = is_published.lower() == "true"
 
     # Upload new images if provided
-    if preview_image and preview_image.filename:
+    if preview_image_url and preview_image_url.filename:
         try:
-            result = await upload_image(upload_type="news", file=preview_image)
+            result = await upload_image(upload_type="news", file=preview_image_url)
             data["preview_image_url"] = result["url"]
         except Exception as e:
             return RedirectResponse(url=f"/admin/news/{news_id}/edit?error=Failed+to+upload+preview+image",
                                     status_code=303)
 
-    if full_image and full_image.filename:
+    if full_image_url and full_image_url.filename:
         try:
-            result = await upload_image(upload_type="news", file=full_image)
+            result = await upload_image(upload_type="news", file=full_image_url)
             data["full_image_url"] = result["url"]
         except Exception as e:
             return RedirectResponse(url=f"/admin/news/{news_id}/edit?error=Failed+to+upload+full+image",
@@ -557,10 +558,11 @@ async def admin_news_edit(
     async with httpx.AsyncClient() as client:
         response = await client.put(
             f"{ANIME_API_URL}/news/{news_id}",
+            headers={"Authorization": f"Bearer {request.cookies.get('access_token')}"},
             json=data,
             timeout=10.0
         )
-
+        print(response.status_code)
         if response.status_code == 200:
             return RedirectResponse(url="/admin/news", status_code=303)
 
@@ -574,12 +576,13 @@ async def admin_news_delete(
         news_id: int,
         payload: dict = None
 ):
-    if not payload or payload['role'] not in ("admin", "moder"):
+    if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
 
     async with httpx.AsyncClient() as client:
         response = await client.delete(
             f"{ANIME_API_URL}/news/{news_id}",
+            headers={"Authorization": f"Bearer {request.cookies.get('access_token')}"},
             timeout=10.0
         )
 

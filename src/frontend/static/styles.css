@@ -347,10 +347,10 @@ body::before {
     font-size: 0.75rem;
 }
 
-/* Популярные аниме - 3 больших постера в ряд */
+/* Популярные аниме - 4 больших постера в ряд */
 .popular-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 2rem;
     margin-bottom: 2rem;
 }

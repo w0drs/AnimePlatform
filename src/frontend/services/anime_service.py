@@ -16,7 +16,6 @@ class AnimeService:
             response = await self.client.get(f"{settings.anime_service}/anime/{anime_id}")
         except httpx.RequestError:
             return None
-        print(response.json())
         return response.json() if response.status_code == 200 else None
 
     async def get_recommendations(self, anime_id: str, limit: int = 10) -> dict:

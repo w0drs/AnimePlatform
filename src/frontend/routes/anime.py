@@ -6,10 +6,10 @@ from typing import Optional
 from fastapi.responses import HTMLResponse
 import urllib.parse
 
-from src.frontend.services.jwt_service import jwt_service
 from src.frontend.schemas import users
 from src.frontend.services.anime_service import anime_service
 from src.frontend.services.auth_decorator import require_auth
+from src.frontend.services.main_service import main_service
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,16 +32,17 @@ async def main(
         is_authorized = True
         is_admin = payload.get("role") in ["admin", "moder"]
 
+    user_id = payload.get("user_id", "")
+    data = await main_service.get_main_page_data(user_id)
+    print(data["popular"])
     return templates.TemplateResponse("main.html", {
         "request": request,
         "active_page": "home",
-
         "is_authorized": is_authorized,
         "is_admin": is_admin,
-
-        "recommended": [...],  # список словарей с полями title, year, rating, image
-        "popular": [...],
-
+        "recommended": data["recommended"],
+        "popular": data["popular"],
+        "news": data["news"],
     }
 )
 

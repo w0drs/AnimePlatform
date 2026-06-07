@@ -39,10 +39,10 @@
         <div class="popular-grid">
             {% for anime in popular %}
             <div class="popular-card">
-                <img src="{{ anime.image }}" alt="{{ anime.title }}" class="popular-image"
-                     onerror="this.src='https://placehold.co/600x1067/f5f5f0/6a9ec9?text={{ anime.title | urlencode }}'">
+                <img src="{{ anime.large_poster_url }}" alt="{{ anime['anime'].title_english }}" class="popular-image"
+                     onerror="this.src='https://placehold.co/600x1067/f5f5f0/6a9ec9?text={{ anime['anime'].title_english | urlencode }}'">
                 <div class="popular-info">
-                    <div class="popular-title">{{ anime.title }}</div>
+                    <div class="popular-title">{{ anime['anime'].title_english }}</div>
                 </div>
             </div>
             {% endfor %}

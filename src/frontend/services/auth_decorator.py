@@ -9,11 +9,9 @@ def require_auth(func):
         request: Request = kwargs.get("request")
 
         payload, needs_refresh = await jwt_service.verify(request)
-
         if needs_refresh:
             path = request.url.path
             if request.cookies.get("refresh"):
-                print("need")
                 return RedirectResponse(url=f"/refresh?next={path}", status_code=302)
 
             kwargs["payload"] = {}
