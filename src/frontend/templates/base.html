@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Kuronami — Аниме-энциклопедия с рекомендациями{% endblock %}</title>
+    <title>{% block title %}Kuronami — anime encyclopedia{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
@@ -18,18 +18,18 @@
         <div class="nav-container">
             <a href="{{ url_for('main') }}" class="logo">Kuro<span>nami</span></a>
             <ul class="nav-links">
-                <li><a href="{{ url_for('main') }}" {% if active_page == 'home' %}class="active"{% endif %}>Главная</a></li>
-                <li><a href="{{ url_for('catalog') }}" {% if active_page == 'catalog' %}class="active"{% endif %}>Каталог</a></li>
-                <li><a href="{{ url_for('news') }}" {% if active_page == 'news' %}class="active"{% endif %}>Новости</a></li>
+                <li><a href="{{ url_for('main') }}" {% if active_page == 'home' %}class="active"{% endif %}>Home</a></li>
+                <li><a href="{{ url_for('catalog') }}" {% if active_page == 'catalog' %}class="active"{% endif %}>Catalog</a></li>
+                <li><a href="{{ url_for('news') }}" {% if active_page == 'news' %}class="active"{% endif %}>News</a></li>
                 {% if is_admin %}<li><a href="/admin">Admin</a></li>{% endif %}
             </ul>
             {% if is_authorized %}
             <div class="auth-buttons">
-                <a href="{{ url_for('profile') }}" class="btn btn-login">Профиль</a>
+                <a href="{{ url_for('profile') }}" class="btn btn-login">Profile</a>
             </div>
             {% else %}
             <div class="auth-buttons">
-                <a href="{{ url_for('login') }}?next={{ request.url.path }}" class="btn btn-login">Вход</a>
+                <a href="{{ url_for('login') }}?next={{ request.url.path }}" class="btn btn-login">Log in</a>
             </div>
             {% endif %}
         </div>
@@ -40,8 +40,7 @@
     </main>
 
     <footer>
-        <p>© 2026 Kuronami — Аниме-энциклопедия с гибридной системой рекомендаций (коллаборативная + контентная фильтрация)</p>
-        <p style="margin-top: 0.5rem; font-size: 0.8rem;">Избранное, комментарии, персональные подборки</p>
+        <p>© 2026 Kuronami — anime encyclopedia</p>
     </footer>
 <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </body>

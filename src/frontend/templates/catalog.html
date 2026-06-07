@@ -18,7 +18,14 @@
     <!-- Filters -->
     <form method="get" class="filters" id="filter-form" action="/catalog">
         <div class="filter-group">
-            <label>📅 Year</label>
+            <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a9ec9" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-right: 0.2rem;">
+                    <rect x="2" y="4" width="20" height="18" rx="2" ry="2"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                </svg>
+                Year
+            </label>
             <select name="year" onchange="this.form.submit()">
                 <option value="">All years</option>
                 {% for y in range(2025, 1990, -1) %}
@@ -29,7 +36,14 @@
         </div>
 
         <div class="filter-group">
-            <label>📺 Type</label>
+            <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a9ec9" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-right: 0.2rem;">
+                    <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="2" x2="8" y2="5"/>
+                    <line x1="16" y1="2" x2="16" y2="5"/>
+                </svg>
+                Type
+            </label>
             <select name="type" onchange="this.form.submit()">
                 <option value="">All types</option>
                 <option value="TV" {% if current_type == 'TV' %}selected{% endif %}>TV</option>
@@ -45,7 +59,13 @@
         </div>
 
         <div class="filter-group">
-            <label>🔞 Age Rating</label>
+            <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a9ec9" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-right: 0.2rem;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polygon points="12 6 14 9 18 9 15 11 16 15 12 13 8 15 9 11 6 9 10 9 12 6"/>
+                </svg>
+                Age Rating
+            </label>
             <select name="rating" onchange="this.form.submit()">
                 <option value="">Any</option>
                 <option value="G - All Ages" {% if current_rating == 'G - All Ages' %}selected{% endif %}>G — All Ages</option>
@@ -58,7 +78,12 @@
         </div>
 
         <div class="filter-group">
-            <label>🎭 Genre</label>
+            <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a9ec9" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-right: 0.2rem;">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Genre
+            </label>
             <select name="genre" onchange="this.form.submit()">
                 <option value="">All genres</option>
                 <option value="Action" {% if current_genre == 'Action' %}selected{% endif %}>Action</option>
@@ -87,7 +112,13 @@
         </div>
 
         <div class="filter-group">
-            <label>🎯 Theme</label>
+            <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a9ec9" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-right: 0.2rem;">
+                    <path d="M20.59 13.41l-5.44 5.44a2 2 0 0 1-2.83 0l-6.88-6.88a2 2 0 0 1 0-2.83l5.44-5.44a2 2 0 0 1 2.83 0l6.88 6.88a2 2 0 0 1 0 2.83z"/>
+                    <line x1="2" y1="22" x2="22" y2="2"/>
+                </svg>
+                Theme
+            </label>
             <select name="theme" onchange="this.form.submit()">
                 <option value="">All themes</option>
                 <option value="Adult Cast" {% if current_theme == 'Adult Cast' %}selected{% endif %}>Adult Cast</option>
@@ -146,7 +177,13 @@
         </div>
 
         <div class="filter-group">
-            <label>👥 Demographic</label>
+            <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a9ec9" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-right: 0.2rem;">
+                    <path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10z"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                Demographic
+            </label>
             <select name="demographic" onchange="this.form.submit()">
                 <option value="">Any</option>
                 <option value="Josei" {% if current_demographic == 'Josei' %}selected{% endif %}>Josei</option>
@@ -158,7 +195,13 @@
         </div>
 
         <div class="filter-group">
-            <label>🔍 Title</label>
+            <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a9ec9" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-right: 0.2rem;">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                Title
+            </label>
             <input type="text" name="search" value="{{ current_search or '' }}" placeholder="Search anime..." onkeypress="if(event.keyCode==13) this.form.submit()">
         </div>
 
@@ -183,7 +226,7 @@
         </div>
         {% else %}
         <div class="empty-catalog">
-            <p>😕 Nothing found. Try changing your search filters.</p>
+            <p>Nothing found. Try changing your search filters.</p>
         </div>
         {% endfor %}
     </div>

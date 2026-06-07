@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Регистрация — Kuronami{% endblock %}
+{% block title %}Register — Kuronami{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -183,7 +183,7 @@
     <div class="login-card">
 
         <div class="login-logo">Kuro<span>nami</span></div>
-        <div class="login-subtitle">Создайте аккаунт</div>
+        <div class="login-subtitle">Create an account</div>
 
         {% if error %}
         <div class="login-error">{{ error }}</div>
@@ -193,7 +193,7 @@
             <div class="login-fields">
 
                 <div class="login-field">
-                    <label for="login">Логин</label>
+                    <label for="login">Username</label>
                     <input type="text" id="login" name="login"
                            placeholder="username"
                            value="{{ form.login or '' }}"
@@ -211,16 +211,16 @@
                 </div>
 
                 <div class="login-field">
-                    <label for="password">Пароль</label>
+                    <label for="password">Password</label>
                     <input type="password" id="password" name="password"
                            placeholder="••••••••"
                            autocomplete="new-password" required>
-                    <span class="field-hint">Минимум 8 символов</span>
+                    <span class="field-hint">At least 8 characters</span>
                     <span class="field-error" id="error-password"></span>
                 </div>
 
                 <div class="login-field">
-                    <label for="confirm-password">Подтверждение пароля</label>
+                    <label for="confirm-password">Confirm password</label>
                     <input type="password" id="confirm-password" name="confirm_password"
                            placeholder="••••••••"
                            autocomplete="new-password" required>
@@ -229,13 +229,13 @@
 
             </div>
 
-            <button type="submit" class="login-submit">Зарегистрироваться</button>
+            <button type="submit" class="login-submit">Sign up</button>
         </form>
 
-        <div class="login-divider">или</div>
+        <div class="login-divider">or</div>
 
         <div class="login-footer">
-            Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>
+            Already have an account? <a href="{{ url_for('login') }}">Log in</a>
         </div>
 
     </div>
@@ -250,7 +250,7 @@ document.getElementById('register-form').addEventListener('submit', function(e) 
     const password = document.getElementById('password');
     const confirm = document.getElementById('confirm-password');
 
-    // Сброс
+    // Reset
     [login, email, password, confirm].forEach(el => {
         el.classList.remove('invalid');
     });
@@ -268,19 +268,19 @@ document.getElementById('register-form').addEventListener('submit', function(e) 
     }
 
     if (login.value.trim().length < 3) {
-        showError(login, 'error-login', 'Логин должен быть не менее 3 символов');
+        showError(login, 'error-login', 'Username must be at least 3 characters');
     }
 
     if (!email.value.includes('@')) {
-        showError(email, 'error-email', 'Введите корректный email');
+        showError(email, 'error-email', 'Enter a valid email address');
     }
 
     if (password.value.length < 8) {
-        showError(password, 'error-password', 'Пароль должен быть не менее 8 символов');
+        showError(password, 'error-password', 'Password must be at least 8 characters');
     }
 
     if (password.value !== confirm.value) {
-        showError(confirm, 'error-confirm', 'Пароли не совпадают');
+        showError(confirm, 'error-confirm', 'Passwords do not match');
     }
 
     if (!valid) e.preventDefault();

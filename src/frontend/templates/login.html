@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Вход — Kuronami{% endblock %}
+{% block title %}Login — Kuronami{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -167,7 +167,7 @@
     <div class="login-card">
 
         <div class="login-logo">Kuro<span>nami</span></div>
-        <div class="login-subtitle">Войдите, чтобы продолжить</div>
+        <div class="login-subtitle">Log in to continue</div>
 
         {% if error %}
         <div class="login-error">{{ error }}</div>
@@ -183,20 +183,20 @@
                            autocomplete="email" required>
                 </div>
                 <div class="login-field">
-                    <label for="password">Пароль</label>
+                    <label for="password">Password</label>
                     <input type="password" id="password" name="password"
                            placeholder="••••••••"
                            autocomplete="current-password" required>
                 </div>
             </div>
 
-            <button type="submit" class="login-submit">Войти</button>
+            <button type="submit" class="login-submit">Log in</button>
         </form>
 
-        <div class="login-divider">или</div>
+        <div class="login-divider">or</div>
 
         <div class="login-footer">
-            Нет аккаунта? <a href="{{ url_for('register_get') }}">Зарегистрироваться</a>
+            Don't have an account? <a href="{{ url_for('register_get') }}">Sign up</a>
         </div>
 
     </div>
