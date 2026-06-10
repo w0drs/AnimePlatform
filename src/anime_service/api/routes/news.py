@@ -65,7 +65,7 @@ async def update_news(
         news_id: int,
         preview_data: NewsPreviewUpdate,
         content_data: NewsContentUpdate,
-        user: dict = Depends(require_moder_or_admin)  # ← проверка прав
+        user: dict = Depends(require_moder_or_admin)
 ):
     """Обновить новость (только модеры и админы)"""
     NewsRepository.update_preview(news_id, preview_data.model_dump(exclude_none=True))
@@ -81,7 +81,7 @@ async def update_news(
 async def toggle_publish(
         news_id: int,
         is_published: bool = Query(...),
-        user: dict = Depends(require_moder_or_admin)  # ← проверка прав
+        user: dict = Depends(require_moder_or_admin)
 ):
     """Переключить статус публикации (только модеры и админы)"""
     updated = NewsRepository.toggle_publish(news_id, is_published)
@@ -95,7 +95,7 @@ async def toggle_publish(
 @router.delete("/{news_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_news(
         news_id: int,
-        user: dict = Depends(require_moder_or_admin)  # ← проверка прав
+        user: dict = Depends(require_moder_or_admin)
 ):
     """Удалить новость (только модеры и админы)"""
     deleted = NewsRepository.delete(news_id)

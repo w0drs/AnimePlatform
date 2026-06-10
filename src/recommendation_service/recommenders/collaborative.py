@@ -117,7 +117,6 @@ class ImplicitRecommender:
 
         user_idx = self.user_map[user_id]
 
-        # Для ALS, мы можем использовать user_factors и item_factors напрямую
         # Вычисляем scores как скалярное произведение
         user_vector = self.model.user_factors[user_idx]
         scores = user_vector.dot(self.model.item_factors.T)

@@ -24,7 +24,7 @@ N_RECOMMENDATIONS_PER_USER = 20
 def main():
     logger.info("Generating Collaborative Recommendations")
 
-    model_path = Path(__file__).parent.parent / "models" / "implicit_als_model.pkl"
+    model_path = Path(__file__).parent.parent / "ml_files" / "implicit_als_model.pkl"
 
     if not model_path.exists():
         logger.error(f"Модель не найдена: {model_path}")
@@ -50,7 +50,7 @@ def main():
         logger.warning("Нет пользователей для генерации рекомендаций")
         return
 
-    logger.info("Генерация рекомендаций...")
+    logger.info("Генерация рекомендаций")
 
     # Очищаем старые рекомендации
     cur = conn.cursor()
@@ -75,7 +75,7 @@ def main():
                     VALUES %s
                 """, data_to_insert)
                 total_inserted += len(data_to_insert)
-                logger.info(f"  Сохранено {total_inserted} рекомендаций...")
+                logger.info(f"  Сохранено {total_inserted} рекомендаций")
                 data_to_insert = []
 
         except Exception as e:
@@ -93,7 +93,7 @@ def main():
     cur.close()
     conn.close()
 
-    logger.info(f"Готово! Сохранено {total_inserted} рекомендаций для {len(users)} пользователей")
+    logger.info(f"Сохранено {total_inserted} рекомендаций для {len(users)} пользователей")
 
 
 if __name__ == "__main__":

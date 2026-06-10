@@ -4,6 +4,7 @@
 import sys
 import logging
 from pathlib import Path
+import traceback
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
@@ -31,7 +32,7 @@ def main():
     logger.info(f"  - Regularization: {REGULARIZATION}")
     logger.info(f"  - Min favorites per user: {MIN_FAVORITES}")
 
-    logger.info("Loading user favorites...")
+    logger.info("Loading user favorites")
 
     recommender = ImplicitRecommender(
         factors=FACTORS,
@@ -45,7 +46,7 @@ def main():
         logger.error(f"Error loading data: {e}")
         return
 
-    logger.info("Training ALS model...")
+    logger.info("Training ALS model")
 
     try:
         stats = recommender.fit(user_ids, anime_ids)
@@ -57,13 +58,12 @@ def main():
         logger.info(f"  - Total interactions: {stats['n_interactions']}")
     except Exception as e:
         logger.error(f"Error training model: {e}")
-        import traceback
         traceback.print_exc()
         return
 
-    logger.info("Saving model...")
+    logger.info("Saving model")
 
-    model_path = Path(__file__).parent.parent / "models" / "implicit_als_model.pkl"
+    model_path = Path(__file__).parent.parent / "ml_files" / "implicit_als_model.pkl"
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
     recommender.save_model(str(model_path))

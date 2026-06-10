@@ -9,9 +9,6 @@ from src.anime_service.api.deps import require_moder_or_admin
 
 router = APIRouter(prefix="/anime", tags=["anime"])
 
-
-# ============= СТАТИЧЕСКИЕ ПУТИ (ДОЛЖНЫ БЫТЬ ВЫШЕ) =============
-
 @router.get("/filter", response_model=AnimeListResponse)
 async def filter_anime(
         page: int = Query(1, ge=1),
@@ -117,9 +114,6 @@ async def get_demographics():
 async def get_studios():
     """Получить все студии"""
     return AnimeRepository.get_all_studios()
-
-
-# ============= ЭНДПОИНТЫ С ПЕРЕМЕННОЙ В ПУТИ (ДОЛЖНЫ БЫТЬ ПОСЛЕДНИМИ) =============
 
 @router.get("/{anime_id}", response_model=AnimeDetailResponse)
 async def get_anime(anime_id: int):

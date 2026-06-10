@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 
-from src.anime_service.api.routes import anime, search, news, popular
+from src.anime_service.api.routes import anime, news, popular
 from src.anime_service.config.settings import settings
 
 
@@ -32,7 +32,6 @@ app.add_middleware(
 
 # Подключаем роутеры
 app.include_router(anime.router)
-app.include_router(search.router)
 app.include_router(news.router)
 app.include_router(popular.router)
 

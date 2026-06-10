@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    logger.info("Синхронизация данных из PostgreSQL в LanceDB...")
+    logger.info("Синхронизация данных из PostgreSQL в LanceDB")
 
     recommender = HybridRecommender()
 
