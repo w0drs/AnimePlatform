@@ -1,4 +1,4 @@
-kuronami.fun {
+:80 {
     rate_limit {
         zone per_second {
             key {remote_host}
