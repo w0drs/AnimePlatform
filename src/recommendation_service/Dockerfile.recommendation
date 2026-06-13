@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements_recommendation_service.txt .
+COPY ./src/recommendation_service/requirements_recommendation_service.txt .
 RUN pip install --no-cache-dir -r requirements_recommendation_service.txt
 
 # Копируем код (включая папку с моделью)

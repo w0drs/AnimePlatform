@@ -37,19 +37,18 @@ services:
 
   # ─────────────────── Migrator (one-shot) ───────────────────
 
-#  migrator:
-#    build:
-#      context: ./src/migrator
-#      dockerfile: Dockerfile.migrator
-#    container_name: migrator
-#    restart: on-failure
-#    environment:
-#      DATABASE_URL: postgres://${POSTGRES_USER:-kuronami}:${POSTGRES_PASSWORD:-secret}@postgres:5432/${POSTGRES_DB:-kuronami}?sslmode=disable
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    networks:
-#      - internal
+  migrator:
+    build:
+      context: ./src/migrator
+      dockerfile: Dockerfile.migrator
+    container_name: migrator
+    restart: on-failure
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
 #  
   # ─────────────────── App services ───────────────────
 
