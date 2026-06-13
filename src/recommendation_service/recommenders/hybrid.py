@@ -2,6 +2,7 @@ import lancedb
 import pandas as pd
 import psycopg2
 import logging
+import os
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Optional
 from src.recommendation_service.config.settings import settings
@@ -57,18 +58,47 @@ class HybridRecommender:
 
     def __init__(self) -> None:
         self.db = lancedb.connect(settings.lance_db_path)
-        self.model = SentenceTransformer(settings.embedding_model)
+
+        # Получаем абсолютный путь к модели
+        model_path = settings.embedding_model
+
+        # Если путь относительный, преобразуем в абсолютный
+        if not os.path.isabs(model_path):
+            # Берём директорию проекта (где находится main.py)
+            base_dir = Path(__file__).resolve().parent.parent.parent
+            model_path = str(base_dir / model_path)
+
+        logger.info(f"Загрузка модели из {model_path}")
+        logger.info(f"Путь существует: {os.path.exists(model_path)}")
+
+        # Устанавливаем оффлайн режим
+        os.environ['HF_HUB_OFFLINE'] = '1'
+        os.environ['TRANSFORMERS_OFFLINE'] = '1'
+
+        # Проверяем, существует ли локальная модель
+        if os.path.exists(model_path):
+            try:
+                self.model = SentenceTransformer(model_path, device='cpu')
+                logger.info("Модель загружена из локальной папки")
+            except Exception as e:
+                logger.error(f"Ошибка загрузки локальной модели: {e}")
+                logger.warning("Пробуем скачать модель из интернета...")
+                self.model = SentenceTransformer("all-MiniLM-L6-v2")
+        else:
+            logger.warning(f"Локальная модель не найдена в {model_path}")
+            logger.warning("Пробуем скачать модель из интернета...")
+            self.model = SentenceTransformer("all-MiniLM-L6-v2")
+
         self.table_name = settings.lance_table_name
         self.table = None
 
         # Веса для разных компонентов
         self.weights = {
-            "text": 1.0,  # вес косинусной похожести описаний
-            "genre": 1.0,  # вес совпадения жанров
-            "theme": 1.0,  # вес совпадения тем
-            "demographic": 1.0  # вес совпадения демографики
+            "text": 1.0,
+            "genre": 1.0,
+            "theme": 1.0,
+            "demographic": 1.0
         }
-        # Максимальное значение функции (0-4)
         self.max_score = 4.0
 
     def sync_from_postgres(self) -> int:
