@@ -13,4 +13,8 @@
     }
 
     reverse_proxy frontend:8000
+
+    header {
+        Content-Security-Policy "upgrade-insecure-requests"
+    }
 }

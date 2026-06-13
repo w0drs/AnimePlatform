@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException, Form, File, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 import httpx
 from pathlib import Path
@@ -79,18 +79,51 @@ async def admin_page(request: Request, payload: dict = None):
         "is_admin": True,
     })
 
-
-@router.get("/tools/{tool}")
+adminClient = httpx.AsyncClient(timeout=30.0)
+@router.api_route("/tools/{tool}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
 @require_auth
-async def admin_tool_redirect(request: Request, tool: str, payload: dict = None):
+async def admin_tool_proxy(
+        request: Request,
+        tool: str,
+        path: str = "",
+        payload: dict = None
+):
+    # Проверка прав
     if not payload or payload.get(RoleKey) not in (RoleADMIN, RoleMODER):
         raise HTTPException(status_code=403)
 
-    url = TOOLS.get(tool)
-    if not url:
+    # Получаем внутренний URL тулза
+    internal_url = TOOLS.get(tool)
+    if not internal_url:
         raise HTTPException(status_code=404)
 
-    return RedirectResponse(url=url, status_code=302)
+    # Формируем полный URL для проксирования
+    proxy_url = f"{internal_url}/{path}"
+    if request.query_params:
+        proxy_url += f"?{request.query_params}"
+
+    # Проксируем запрос
+    try:
+        body = await request.body()
+
+        response = await adminClient.request(
+            method=request.method,
+            url=proxy_url,
+            headers={k: v for k, v in request.headers.items()
+                     if k.lower() not in ["host", "content-length"]},
+            content=body,
+            follow_redirects=True,
+        )
+
+        # Возвращаем ответ
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Proxy error: {str(e)}")
+
 
 @router.get("/anime", response_class=HTMLResponse)
 @require_auth

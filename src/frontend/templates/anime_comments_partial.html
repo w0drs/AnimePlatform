@@ -8,8 +8,8 @@
         </div>
         <div class="comment-content">
             <div class="comment-header">
-                <span class="comment-author">{{ comment.username or 'Аноним' }}</span>
-                <span class="comment-date">{{ comment.created_at or 'только что' }}</span>
+                <span class="comment-author">{{ comment.username or 'Anonim' }}</span>
+                <span class="comment-date">{{ comment.created_at or 'recently' }}</span>
             </div>
             <div class="comment-text">{{ comment.text or '' }}</div>
             <div class="comment-actions">
@@ -21,7 +21,7 @@
         </div>
     </div>
     {% else %}
-    <div class="comment-empty">Пока нет комментариев. Будьте первым!</div>
+    <div class="comment-empty">No comments now. You can be the first!</div>
     {% endfor %}
 </div>
 
