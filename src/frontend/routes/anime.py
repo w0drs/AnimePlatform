@@ -10,6 +10,7 @@ from src.frontend.schemas import users
 from src.frontend.services.anime_service import anime_service
 from src.frontend.services.auth_decorator import require_auth
 from src.frontend.services.main_service import main_service
+from src.frontend.config.settings import settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -203,7 +204,7 @@ async def catalog(
                 params["search"] = search
 
             response = await client.get(
-                "http://localhost:8001/anime/filter",
+                f"http://{settings.anime_service}/anime/filter",
                 params=params,
                 timeout=10.0
             )
