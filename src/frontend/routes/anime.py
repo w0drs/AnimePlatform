@@ -204,7 +204,7 @@ async def catalog(
                 params["search"] = search
 
             response = await client.get(
-                f"http://{settings.anime_service}/anime/filter",
+                f"{settings.anime_service}/anime/filter",
                 params=params,
                 timeout=10.0
             )
