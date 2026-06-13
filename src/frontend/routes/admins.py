@@ -21,6 +21,8 @@ TOOLS = {
     "adminer":      settings.adminer_endpoint,
     "portainer":    settings.portainer_endpoint,
     "redisinsight": settings.redis_insight_endpoint,
+    "anime_swagger": f"{settings.anime_service}/docs",
+    "recommendation_swagger": f"{settings.recommends_service}/docs"
 }
 
 async def get_genres_list() -> List[tuple]:

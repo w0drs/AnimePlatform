@@ -37,10 +37,5 @@ class Settings(BaseSettings):
             'password': self.pg_password
         }
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-
 
 settings = Settings()
