@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import httpx
 from typing import Optional
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 import urllib.parse
 
 from src.frontend.schemas import users
@@ -17,6 +17,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 router = APIRouter()
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 templates.env.globals.update(max=max, min=min)
+
+@router.get("/")
+async def root():
+    return RedirectResponse(url="/main")
 
 @router.get("/main", response_class=HTMLResponse)
 @require_auth
@@ -35,7 +39,6 @@ async def main(
 
     user_id = payload.get("user_id", "")
     data = await main_service.get_main_page_data(user_id)
-    print(data["news"])
     return templates.TemplateResponse("main.html", {
         "request": request,
         "active_page": "home",

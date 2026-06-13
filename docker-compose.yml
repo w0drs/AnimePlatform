@@ -148,8 +148,8 @@ services:
     networks:
       - internal
       - external
-    expose:
-      - "8080"
+    ports:
+      - "127.0.0.1:8080:8080"
 
   redisinsight:
     image: redis/redisinsight:latest
@@ -160,8 +160,8 @@ services:
     networks:
       - internal
       - external
-    expose:
-      - "5540"
+    ports:
+      - "127.0.0.1:5540:5540"
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -172,8 +172,8 @@ services:
       - portainer_data:/data
     networks:
       - external
-    expose:
-      - "9000"
+    ports:
+      - "127.0.0.1:9000:9000"
 
 # ─────────────────── Volumes ───────────────────
 
@@ -189,5 +189,4 @@ volumes:
 
 networks:
   internal:
-    internal: true
   external:
