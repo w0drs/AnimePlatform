@@ -1,0 +1,51 @@
+<!-- Список комментариев -->
+<div class="comments-list">
+    {% for comment in comments %}
+    <div class="comment-item" id="comment-{{ comment.id }}">
+        <div class="comment-avatar">
+            <img src="{{ comment.user_avatar or 'https://placehold.co/40x40/f5f5f0/6a9ec9?text=' + (comment.username|first|upper if comment.username else 'U') }}"
+                 alt="{{ comment.username or 'User' }}">
+        </div>
+        <div class="comment-content">
+            <div class="comment-header">
+                <span class="comment-author">{{ comment.username or 'Anonim' }}</span>
+                <span class="comment-date">{{ comment.created_at or 'recently' }}</span>
+            </div>
+            <div class="comment-text">{{ comment.text or '' }}</div>
+            <div class="comment-actions">
+                <button class="comment-reply"
+                        onclick="replyToComment({{ comment.id }}, '{{ comment.username or '' }}')">
+                    Ответить
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="comment-empty">No comments now. You can be the first!</div>
+    {% endfor %}
+</div>
+
+<!-- Пагинация -->
+<div class="pagination comments-pagination">
+    <button class="page-btn {% if not has_prev %}page-btn--disabled{% endif %}"
+            {% if has_prev %}
+            hx-get="/anime/{{ anime_id }}/comments?page={{ page - 1 }}"
+            hx-target="#comments-block"
+            hx-swap="innerHTML"
+            hx-indicator="#comments-loader"
+            {% else %}disabled{% endif %}>
+        back
+    </button>
+
+    <span class="page-current">{{ page }}</span>
+
+    <button class="page-btn {% if not has_next %}page-btn--disabled{% endif %}"
+            {% if has_next %}
+            hx-get="/anime/{{ anime_id }}/comments?page={{ page + 1 }}"
+            hx-target="#comments-block"
+            hx-swap="innerHTML"
+            hx-indicator="#comments-loader"
+            {% else %}disabled{% endif %}>
+        forward
+    </button>
+</div>

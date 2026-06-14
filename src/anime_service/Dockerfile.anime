@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+WORKDIR /app
+
+COPY ./src/anime_service/requirements_anime_service.txt .
+RUN pip install --no-cache-dir -r requirements_anime_service.txt
+
+COPY src/anime_service/ ./src/anime_service/
+EXPOSE 8001
+CMD ["uvicorn", "src.anime_service.crud_service:app", "--host", "0.0.0.0" , "--port", "8001"]

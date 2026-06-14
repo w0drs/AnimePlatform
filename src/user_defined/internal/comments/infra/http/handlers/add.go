@@ -18,12 +18,14 @@ func (h *CommentsHandlers) AddAnimeComment(w http.ResponseWriter, r *http.Reques
 		coreHttp.SendErrorJSON(h.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
+
 	var req dto.AddAnimeCommentRequest
 	if errBody := coreHttp.ParseJSONBody(h.logger, r, &req); errBody != nil {
 		h.logger.Warn("invalid body", "error", errBody.Error())
 		coreHttp.SendErrorJSON(h.logger, w, errBody)
 		return
 	}
+
 	var taggedUserID *uuid.UUID
 	if req.TaggedUserID != "" {
 		uuidParse, err := uuid.Parse(req.TaggedUserID)
@@ -76,12 +78,14 @@ func (h *CommentsHandlers) AddNewsComment(w http.ResponseWriter, r *http.Request
 		coreHttp.SendErrorJSON(h.logger, w, &coreHttp.ErrUnauthorized)
 		return
 	}
+
 	var req dto.AddNewsCommentRequest
 	if errBody := coreHttp.ParseJSONBody(h.logger, r, &req); errBody != nil {
 		h.logger.Warn("invalid body", "error", errBody.Error())
 		coreHttp.SendErrorJSON(h.logger, w, errBody)
 		return
 	}
+
 	var taggedUserID *uuid.UUID
 	if req.TaggedUserID != "" {
 		uuidParse, err := uuid.Parse(req.TaggedUserID)

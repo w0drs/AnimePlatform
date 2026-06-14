@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY ./src/recommendation_service/requirements_recommendation_service.txt .
+RUN pip install --no-cache-dir -r requirements_recommendation_service.txt
+
+# Копируем код (включая папку с моделью)
+COPY src/ ./src/
+COPY .env .env
+
+RUN mkdir -p /app/src/recommendation_service/lancedb
+
+# Отключаем попытки скачать модель (используем локальную)
+ENV HF_HUB_OFFLINE=1
+ENV TRANSFORMERS_OFFLINE=1
+
+EXPOSE 8003
+
+CMD ["uvicorn", "src.recommendation_service.main:app", "--host", "0.0.0.0", "--port", "8003"]

@@ -1,25 +1,25 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+import os
 
 
 class Settings(BaseSettings):
     # PostgreSQL
-    pg_host: str = "localhost"
-    pg_port: int = 5432
-    pg_database: str = "anime_db"
-    pg_user: str = "postgres"
-    pg_password: str = "12345"
+    pg_host: str = os.getenv("PG_HOST", "192.168.3.160")
+    pg_port: int = int(os.getenv("PG_PORT", 5432))
+    pg_database: str = os.getenv("PG_DATABASE", "kuronami")
+    pg_user: str = os.getenv("PG_USER", "postgres")
+    pg_password: str = os.getenv("PG_PASSWORD", "postgres")
 
-    api_port: int = 8000
-    api_host: str = "0.0.0.0"
+    api_port: int = int(os.getenv("API_PORT", 8001))
+    api_host: str = os.getenv("API_HOST", "0.0.0.0")
 
-    auth_host: str = "http://192.168.3.106"
-    auth_port: int = 16767
+    auth_host: str = os.getenv("AUTH_HOST", "http://localhost")
+    auth_port: int = int(os.getenv("AUTH_PORT", 8002))
 
-    database_url: Optional[str] = None
+    database_url: str = os.getenv("DATABASE_URL", "")
 
     # LanceDB
-    lance_db_path: str = "./lancedb"
+    lance_db_path: str = os.getenv("LANCE_DB_PATH", "./lancedb")
 
     @property
     def pg_dsn(self) -> str:
@@ -36,11 +36,6 @@ class Settings(BaseSettings):
             'user': self.pg_user,
             'password': self.pg_password
         }
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False  # PG_HOST = pg_host
 
 
 settings = Settings()

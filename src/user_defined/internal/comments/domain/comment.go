@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	DefaultCommentsPerPage = 15
-	MaxPageSize            = 200
+	DefaultCommentsPerPage = 10
+	MaxPageSize            = 100
 )
 
 type AnimeComment struct {

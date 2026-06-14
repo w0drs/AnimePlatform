@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}{{ anime.title_english if anime else 'Anime' }} — Kuronami{% endblock %}
+
+{% block extra_head %}
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<style>
+    .anime-detail-layout {
+        display: flex;
+        gap: 3rem;
+        flex-wrap: wrap;
+        margin-bottom: 3rem;
+    }
+
+    .anime-detail-poster {
+        flex-shrink: 0;
+        width: 300px;
+        position: relative;
+    }
+
+    .anime-detail-poster img {
+        width: 100%;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .favorite-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .favorite-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .favorite-btn--active {
+        color: gold;
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .anime-detail-info {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .anime-detail-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1.5rem;
+    }
+
+    .anime-detail-metadata {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #1a1a2e;
+        min-width: 100px;
+    }
+
+    .meta-value {
+        color: #4a4a5e;
+    }
+
+    .meta-value .rating-badge {
+        background: #e0e0d8;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Стили для блоков */
+    .info-block {
+        background: #f8f8f0;
+        border-radius: 1rem;
+        padding: 1.5rem 2rem;
+        margin-top: 2rem;
+    }
+
+    .info-block h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-block h3::before {
+        content: '';
+        width: 4px;
+        height: 1.5rem;
+        background: #1a1a2e;
+        border-radius: 2px;
+    }
+
+    .info-block p {
+        line-height: 1.6;
+        color: #2a2a3e;
+        margin: 0;
+    }
+
+    /* Блок трейлера */
+    .trailer-block {
+        background: #1a1a2e;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .trailer-block h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .trailer-block h3::before {
+        content: '';
+        width: 4px;
+        height: 1.5rem;
+        background: #6a9ec9;
+        border-radius: 2px;
+    }
+
+    .trailer-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        border-radius: 0.75rem;
+    }
+
+    .trailer-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Похожие аниме */
+    .similar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .similar-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: #f8f8f0;
+    }
+
+    .similar-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .similar-card img {
+        width: 100%;
+        aspect-ratio: 200 / 280;
+        object-fit: cover;
+    }
+
+    .similar-info {
+        padding: 0.75rem;
+    }
+
+    .similar-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .similar-year {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .similar-empty {
+        text-align: center;
+        padding: 2rem;
+        background: #f8f8f0;
+        border-radius: 1rem;
+        color: #666;
+    }
+
+    /* Комментарии */
+    .comments-block {
+        background: #f8f8f0;
+        border-radius: 1rem;
+        padding: 1.5rem 2rem;
+        margin-top: 2rem;
+    }
+
+    .comments-block h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .comments-block h3::before {
+        content: '';
+        width: 4px;
+        height: 1.5rem;
+        background: #1a1a2e;
+        border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+        .anime-detail-layout {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .anime-detail-poster {
+            width: 250px;
+        }
+
+        .anime-detail-metadata {
+            grid-template-columns: 1fr;
+        }
+
+        .info-block,
+        .trailer-block,
+        .comments-block {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container anime-page">
+    {% if anime %}
+    <div class="anime-detail-layout">
+        <!-- Poster -->
+        <div class="anime-detail-poster">
+            {% if is_authorized %}
+            <button id="favorite-btn"
+                class="favorite-btn {% if is_favorite %}favorite-btn--active{% endif %}"
+                onclick="toggleFavorite()"
+                data-anime-id="{{ anime.id }}"
+                data-favorited="{{ 'true' if is_favorite else 'false' }}">
+                ★
+            </button>
+            {% endif %}
+            <img src="{{ anime.image_webp_large_url or 'https://placehold.co/400x560/f5f5f0/6a9ec9?text=No+Image' }}"
+                 alt="{{ anime.title_english or 'Anime poster' }}">
+        </div>
+
+        <!-- Main Info -->
+        <div class="anime-detail-info">
+            <h1 class="anime-detail-title">{{ anime.title_english or 'Untitled' }}</h1>
+
+            <div class="anime-detail-metadata">
+                <div class="meta-row">
+                    <span class="meta-label">Type:</span>
+                    <span class="meta-value">{{ anime.type or 'Unknown' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Episodes:</span>
+                    <span class="meta-value">{{ anime.episodes if anime.episodes is not none else 'Unknown' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Duration:</span>
+                    <span class="meta-value">{{ anime.duration or 'Unknown' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Rating:</span>
+                    <span class="meta-value"><span class="rating-badge">{{ anime.rating or 'Unknown' }}</span></span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Year:</span>
+                    <span class="meta-value">{{ anime.year if anime.year is not none else 'Unknown' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Genres:</span>
+                    <span class="meta-value">{{ genres|join(', ') if genres else 'Unknown' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Themes:</span>
+                    <span class="meta-value">{{ themes|join(', ') if themes else 'Unknown' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Demographics:</span>
+                    <span class="meta-value">{{ demographics|join(', ') if demographics else 'Unknown' }}</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Studios:</span>
+                    <span class="meta-value">{{ studios|join(', ') if studios else 'Unknown' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Synopsis Section -->
+    {% if anime.synopsis %}
+    <div class="info-block">
+        <h3>Synopsis</h3>
+        <p>{{ anime.synopsis }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Background Section -->
+    {% if anime.background %}
+    <div class="info-block">
+        <h3>Background</h3>
+        <p>{{ anime.background }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Trailer Section -->
+    {% if anime.trailer_url %}
+    <div class="trailer-block">
+        <h3>Trailer</h3>
+        <div class="trailer-container">
+            <iframe
+                src="https://www.youtube.com/embed/{{ anime.trailer_url.split('v=')[-1].split('&')[0] }}"
+                title="{{ anime.title_english }} trailer"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Similar Anime Section -->
+    <div class="info-block">
+        <h3>Similar Anime</h3>
+        <div class="similar-grid">
+            {% for similar in similar_anime %}
+            <div class="similar-card" onclick="location.href='/anime/{{ similar.id }}'">
+                <img src="{{ similar.image_webp_large_url or 'https://placehold.co/200x280/f5f5f0/6a9ec9?text=No+Image' }}"
+                     alt="{{ similar.title_english or 'Similar anime' }}">
+                <div class="similar-info">
+                    <div class="similar-title">{{ similar.title_english or 'Untitled' }}</div>
+                    <div class="similar-year">{{ similar.year if similar.year is not none else '?' }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="similar-empty">No similar anime found</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="comments-block">
+        <h3>Comments</h3>
+
+        {% if is_authorized %}
+        <div class="comment-form">
+            <div class="comment-input-area">
+                <textarea id="comment-text" placeholder="Write a comment..."></textarea>
+                <button class="btn-submit" onclick="submitComment()">Post</button>
+            </div>
+        </div>
+        {% else %}
+        <div class="comment-login-prompt">
+            <p><a href="/login">Log in</a> to leave a comment</p>
+        </div>
+        {% endif %}
+
+        <div id="comments-loader" class="htmx-indicator comments-loader">Loading...</div>
+
+        <div id="comments-block">
+            {% include "anime_comments_partial.html" %}
+        </div>
+    </div>
+    {% else %}
+    <div class="error-message">
+        <h2>Anime not found</h2>
+        <p>Sorry, the requested anime does not exist or has been removed.</p>
+        <a href="/catalog" class="btn btn-register">Back to catalog</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function submitComment() {
+    const textarea = document.getElementById('comment-text');
+    const text = textarea.value.trim();
+    if (!text) return;
+
+    fetch('/api/comments/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            anime_id: {{ anime.id if anime else 0 }},
+            text: text,
+            parent_id: window.replyParentId || null
+        })
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Error posting comment');
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again later.');
+    });
+}
+
+function replyToComment(parentId, username) {
+    const textarea = document.getElementById('comment-text');
+    if (!textarea) return;
+    if (username) {
+        textarea.value = '@' + username + ' ';
+    }
+    textarea.focus();
+    window.replyParentId = parentId;
+}
+
+function loadCommentsPage(page) {
+    location.href = window.location.pathname + '?page=' + page;
+}
+
+let favoriteLocked = false;
+
+async function toggleFavorite() {
+    if (favoriteLocked) return;
+    favoriteLocked = true;
+
+    const btn = document.getElementById('favorite-btn');
+    const animeId = btn.dataset.animeId;
+    const isFavorited = btn.dataset.favorited === 'true';
+
+    const method = isFavorited ? 'DELETE' : 'POST';
+
+    try {
+        const response = await fetch(`/api/favorites/${animeId}`, { method });
+        const data = await response.json();
+
+        if (data.success) {
+            btn.dataset.favorited = isFavorited ? 'false' : 'true';
+            btn.classList.toggle('favorite-btn--active');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+    }
+
+    setTimeout(() => { favoriteLocked = false; }, 1000);
+}
+</script>
+{% endblock %}

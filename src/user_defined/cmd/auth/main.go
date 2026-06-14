@@ -10,7 +10,7 @@ import (
 func main() {
 	ctx := context.Background()
 
-	logLevel := utils.GetEnv("LOG_LEVEL", "info")
+	logLevel := utils.GetEnv("LOG_LEVEL", "debug")
 	logFile, logs := pkg.NewSlogLogger(logLevel)
 	defer func() {
 		if err := logFile.Close(); err != nil {

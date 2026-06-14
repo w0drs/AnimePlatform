@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kuronami — anime encyclopedia{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('main') }}" class="logo">Kuro<span>nami</span></a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('main') }}" {% if active_page == 'home' %}class="active"{% endif %}>Home</a></li>
+                <li><a href="{{ url_for('catalog') }}" {% if active_page == 'catalog' %}class="active"{% endif %}>Catalog</a></li>
+                <li><a href="{{ url_for('news') }}" {% if active_page == 'news' %}class="active"{% endif %}>News</a></li>
+                {% if is_admin %}<li><a href="/admin">Admin</a></li>{% endif %}
+            </ul>
+            {% if is_authorized %}
+            <div class="auth-buttons">
+                <a href="{{ url_for('profile') }}" class="btn btn-login">Profile</a>
+            </div>
+            {% else %}
+            <div class="auth-buttons">
+                <a href="{{ url_for('login') }}?next={{ request.url.path }}" class="btn btn-login">Log in</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>© 2026 Kuronami — anime encyclopedia</p>
+    </footer>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</body>
+</html>

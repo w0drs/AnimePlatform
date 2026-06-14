@@ -41,6 +41,7 @@ func AuthMiddleware(logger *slog.Logger, authService *security.JWT, pool *redis.
 
 			claims, err := authService.ParseToken(token)
 			if err != nil {
+				logger.Error("error parsing token", "error", err.Error())
 				apiErr := coreHttp.NewErrorWithDetails(coreHttp.ErrUnauthorized,
 					"authorization", "invalid or expired token")
 				coreHttp.SendErrorJSON(logger, w, &apiErr)
@@ -51,13 +52,13 @@ func AuthMiddleware(logger *slog.Logger, authService *security.JWT, pool *redis.
 			if err != nil {
 				logger.Error("check token existence failed", "jti", claims.JwtID.String(), "error", err.Error())
 				apiErr := coreHttp.NewErrorWithDetails(coreHttp.ErrUnauthorized,
-					"authorization", "invalid or expired token")
+					"authorization", "invalid or expired token: ttl")
 				coreHttp.SendErrorJSON(logger, w, &apiErr)
 				return
 			}
 			if exists == 0 {
 				apiErr := coreHttp.NewErrorWithDetails(coreHttp.ErrUnauthorized,
-					"authorization", "invalid or expired token")
+					"authorization", "invalid or expired token: not exists")
 				coreHttp.SendErrorJSON(logger, w, &apiErr)
 				return
 			}

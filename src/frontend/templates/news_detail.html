@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}{{ news.title }} — Kuronami{% endblock %}
+
+{% block extra_head %}
+<style>
+    .news-detail-hero {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        object-position: center;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+    }
+
+    .news-detail-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .news-detail-header {
+        margin-bottom: 2rem;
+    }
+
+    .news-detail-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .news-detail-meta {
+        display: flex;
+        gap: 1.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        border-bottom: 1px solid #e0e0d8;
+        padding-bottom: 1rem;
+    }
+
+    .news-detail-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .news-detail-content {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #2a2a3e;
+    }
+
+    .news-detail-content p {
+        margin-bottom: 1.5rem;
+    }
+
+    .news-detail-content h2,
+    .news-detail-content h3 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: #1a1a2e;
+    }
+
+    .news-detail-content ul,
+    .news-detail-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .news-detail-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .news-detail-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-bottom: 1.5rem;
+        transition: color 0.2s;
+    }
+
+    .news-detail-back:hover {
+        color: #1a1a2e;
+    }
+
+    @media (max-width: 768px) {
+        .news-detail-hero {
+            height: 250px;
+        }
+
+        .news-detail-title {
+            font-size: 1.8rem;
+        }
+
+        .news-detail-container {
+            padding: 0 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="news-detail-container">
+    <a href="/news" class="news-detail-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to news
+    </a>
+
+    {% if news.full_image_url %}
+    <img src="{{ news.full_image_url }}" alt="{{ news.title }}" class="news-detail-hero" loading="lazy">
+    {% endif %}
+
+    <div class="news-detail-header">
+        <h1 class="news-detail-title">{{ news.title }}</h1>
+        <div class="news-detail-meta">
+            <div class="news-detail-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>{{ news.created_at or news.date if news.date else 'Recently' }}</span>
+            </div>
+            <div class="news-detail-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Kuronami Editorial</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="news-detail-content">
+        {{ news.full_content | safe }}
+    </div>
+</div>
+{% endblock %}
