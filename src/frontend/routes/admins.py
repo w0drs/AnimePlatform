@@ -9,7 +9,8 @@ from starlette.responses import JSONResponse
 from src.frontend.services.auth_decorator import require_auth
 from src.frontend.services.s3_service import upload_image
 from src.frontend.config.settings import settings
-from src.frontend.schemas.users import RoleUser, RoleKey, RoleMODER, RoleADMIN
+from src.frontend.schemas.users import RoleKey, RoleMODER, RoleADMIN
+from src.frontend.services.anime_service import get_anime_by_id, get_genres_list, get_studios_list, get_themes_list, get_demographics_list
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -25,46 +26,12 @@ TOOLS = {
     "recommendation_swagger": f"{settings.recommends_service}/docs"
 }
 
-async def get_genres_list() -> List[tuple]:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{ANIME_API_URL}/anime/genres", timeout=10.0)
-        if response.status_code == 200:
-            return [(g['id'], g['name']) for g in response.json()]
-        return []
-
-
-async def get_themes_list() -> List[tuple]:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{ANIME_API_URL}/anime/themes", timeout=10.0)
-        if response.status_code == 200:
-            return [(t['id'], t['name']) for t in response.json()]
-        return []
-
-
-async def get_demographics_list() -> List[tuple]:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{ANIME_API_URL}/anime/demographics", timeout=10.0)
-        if response.status_code == 200:
-            return [(d['id'], d['name']) for d in response.json()]
-        return []
-
-
-async def get_studios_list() -> List[str]:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{ANIME_API_URL}/anime/studios", timeout=10.0)
-        if response.status_code == 200:
-            return [s['name'] for s in response.json()]
-        return []
-
-
-async def get_anime_by_id(anime_id: int) -> Optional[dict]:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{ANIME_API_URL}/anime/{anime_id}", timeout=10.0)
-        if response.status_code == 200:
-            return response.json()
-    return None
-
-
+@router.get("/check", name="admin")
+@require_auth
+async def admin_page(request: Request, payload: dict = None):
+    if not payload or payload.get(RoleKey) != RoleADMIN:
+        raise HTTPException(status_code=403)
+    return JSONResponse({"message": "ok"}, status_code=200)
 
 @router.get("", name="admin")
 @require_auth

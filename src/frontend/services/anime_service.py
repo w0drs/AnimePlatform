@@ -1,8 +1,53 @@
 import asyncio
 import httpx
+from typing import Optional, List
 
 from src.frontend.config.settings import settings
 from src.frontend.utils.utils import format_time_ago
+
+ANIME_API_URL = settings.anime_service
+
+async def get_genres_list() -> List[tuple]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{ANIME_API_URL}/anime/genres", timeout=10.0)
+        if response.status_code == 200:
+            return [(g['id'], g['name']) for g in response.json()]
+        return []
+
+
+async def get_themes_list() -> List[tuple]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{ANIME_API_URL}/anime/themes", timeout=10.0)
+        if response.status_code == 200:
+            return [(t['id'], t['name']) for t in response.json()]
+        return []
+
+
+async def get_demographics_list() -> List[tuple]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{ANIME_API_URL}/anime/demographics", timeout=10.0)
+        if response.status_code == 200:
+            return [(d['id'], d['name']) for d in response.json()]
+        return []
+
+
+async def get_studios_list() -> List[str]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{ANIME_API_URL}/anime/studios", timeout=10.0)
+        if response.status_code == 200:
+            return [s['name'] for s in response.json()]
+        return []
+
+
+async def get_anime_by_id(anime_id: int) -> Optional[dict]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{ANIME_API_URL}/anime/{anime_id}", timeout=10.0)
+        if response.status_code == 200:
+            return response.json()
+    return None
+
+
+
 
 class AnimeService:
     def __init__(self):
