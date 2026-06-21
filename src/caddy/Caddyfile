@@ -18,3 +18,27 @@
         Content-Security-Policy "upgrade-insecure-requests"
     }
 }
+
+# Adminer
+#adminer.kuronami.fun {
+#    basicauth {
+#       admin <caddy created pass>
+#    }
+#    reverse_proxy adminer:8080
+#}
+#
+# RedisInsight
+#redisinsight.kuronami.fun {
+#    basicauth {
+#        admin <caddy created pass>
+#    }
+#    reverse_proxy redisinsight:5540
+#}
+#
+# Portainer
+#portainer.kuronami.fun {
+#    basicauth {
+#       admin <caddy created pass>
+#    }
+#    reverse_proxy portainer:9000
+#}
