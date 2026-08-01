@@ -34,7 +34,7 @@
 
 **Машинное обучение и векторный поиск**
 - sentence-transformers (`all-MiniLM-L6-v2`, 384-мерные эмбеддинги)
-- LanceDB (IVF-PQ индекс) — встраиваемая векторная база данных
+- Qdrant (IVF-PQ индекс) — встраиваемая векторная база данных
 - implicit (ALS) — коллаборативная фильтрация с Cython-оптимизацией
 - scikit-learn, scipy, numpy, pandas
 
