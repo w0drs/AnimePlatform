@@ -14,7 +14,7 @@
 
 | Компонент | Стек | Порт | Назначение |
 |-----------|------|------|------------|
-| **Caddy** | Caddy | 80, 443 | Reverse proxy, SSL/TLS (Let's Encrypt), rate limiting |
+| **Caddy** | Caddy | 443 | Reverse proxy, SSL/TLS (Let's Encrypt), rate limiting |
 | **Frontend Service** | Python 3.11, FastAPI, Jinja2 | 8000 | Серверный рендеринг HTML, API Gateway, агрегация данных |
 | **Content Service** | Python 3.11, FastAPI, PostgreSQL | 8001 | Управление аниме, жанрами, студиями, новостями |
 | **Auth & Users Service** | Go 1.25, Chi, pgx, PostgreSQL | 8002 | Аутентификация (JWT), пользователи, комментарии, избранное |
