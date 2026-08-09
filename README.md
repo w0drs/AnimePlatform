@@ -41,6 +41,7 @@
 **Базы данных и кэш**
 - PostgreSQL (два независимых инстанса)
 - Redis
+- QDrant
 
 **Инфраструктура**
 - Docker, Docker Compose
