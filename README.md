@@ -87,7 +87,7 @@
 
 ```bash
 git clone https://github.com/w0drs/AnimePlatform
-cd <project-directory>
+cd AnimePlatform
 docker compose up --build
 ```
 
