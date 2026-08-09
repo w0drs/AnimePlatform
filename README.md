@@ -86,7 +86,7 @@
 ### Запуск
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/w0drs/AnimePlatform
 cd <project-directory>
 docker compose up --build
 ```
